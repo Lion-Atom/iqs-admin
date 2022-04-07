@@ -1,0 +1,46 @@
+/*
+ *  Copyright 2019-2020 Zheng Jie
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package me.zhengjie.repository;
+
+import me.zhengjie.domain.LocalStorageSmall;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * @author Zheng Jie
+ * @date 2019-09-05
+ */
+@Repository
+public interface LocalStorageSmallRepository extends JpaRepository<LocalStorageSmall, Long>, JpaSpecificationExecutor<LocalStorageSmall> {
+
+
+    /**
+     * @param ids 文件标识集合
+     * @return 文件信息
+     */
+    @Query(value = "select * from tool_local_storage where storage_id in ?1 ", nativeQuery = true)
+    List<LocalStorageSmall> findAllByIds(Long[] ids);
+
+    /**
+     * @return 当天文件新增数目
+     */
+    @Query(value = "select count(storage_id) from tool_local_storage  where date_format(create_time,'%Y-%m-%d') = ?1", nativeQuery = true)
+    Integer getCountByDateTime(String time);
+}
