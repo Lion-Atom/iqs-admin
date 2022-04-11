@@ -57,6 +57,7 @@ public class TestTask {
     private final AuditPlanRepository planRepository;
     private final AuditPlanReportRepository reportRepository;
     private final InstruCaliRepository caliRepository;
+    private final InstruCaliFileRepository fileRepository;
 
     public void run() {
         log.info("run 执行成功");
@@ -234,6 +235,7 @@ public class TestTask {
                 // 下次校准时间超出，判定为超时未校准
                 if (time < zero) {
                     cali.setStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
+                    fileRepository.updateToOld(cali.getId());
                     caliRepository.save(cali);
                 }
             });

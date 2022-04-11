@@ -50,7 +50,7 @@ public class CaliOrgFileController {
         return new ResponseEntity<>(fileService.findByCaliOrgId(caliOrgId), HttpStatus.OK);
     }
 
-    @ApiOperation("查询仪校机构下相关附件")
+    @ApiOperation("删除仪校机构下指定的相关附件")
     @GetMapping(value = "/delByCaliOrgIdAndName")
     @PreAuthorize("@el.check('caliorg:list')")
     public ResponseEntity<Object> delByCaliOrgIdAndName(@RequestParam("caliOrgId") Long caliOrgId,@RequestParam("realName") String realName) {

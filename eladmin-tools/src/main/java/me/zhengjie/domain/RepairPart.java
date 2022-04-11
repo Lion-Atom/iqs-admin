@@ -33,8 +33,8 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table(name = "equip_part")
-public class EquipPart extends BaseEntity implements Serializable {
+@Table(name = "repair_part")
+public class RepairPart extends BaseEntity implements Serializable {
 
     @Id
     @Column(name = "part_id")
@@ -58,7 +58,15 @@ public class EquipPart extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "规格型号")
     private String partSpec;
 
+    @ApiModelProperty(value = "零件类型")
+    private String partType;
+
     @ApiModelProperty(value = "零件属性")
     private String partProperty;
 
+    @ApiModelProperty(value = "零件数量")
+    private String partQuantity;
+
+    @ApiModelProperty(value = "零件单价")
+    private String partCost;
 }

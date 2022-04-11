@@ -65,7 +65,7 @@ public class InstruCaliServiceImpl implements InstruCaliService {
             map.put("使用区域", dto.getUseArea());
             map.put("使用人", dto.getUseBy());
             map.put("上一次校准日期", ValidationUtil.transToDate(dto.getLastCaliDate()));
-            map.put("校准周期", dto.getCaliPeriod()+dto.getPeriodUnit());
+            map.put("校准周期", dto.getCaliPeriod() + dto.getPeriodUnit());
             map.put("下一次校准日期", ValidationUtil.transToDate(dto.getNextCaliDate()));
             map.put("内部校准", dto.getInnerChecked() ? "是" : "否");
             if (!dto.getInnerChecked()) {
@@ -145,10 +145,38 @@ public class InstruCaliServiceImpl implements InstruCaliService {
         // 内部ID是唯一性校验
         if (calibration != null && !calibration.getId().equals(old.getId())) {
 //            throw new EntityIDExistException(InstruCali.class, "innerId", resource.getInnerId());
-            throw new BadRequestException("该内部ID已存在，请核实后填入！");
+            throw new BadRequestException("该内部ID " +
+                    "已存在，请核实后填入！");
         }
+        /*if (resource.getStatus().equals(CommonConstants.INSTRU_CALI_STATUS_OVERDUE)) {
+            long current=System.currentTimeMillis();//当前时间毫秒数
+            long zero=current/(1000*3600*24)*(1000*3600*24)- TimeZone.getDefault().getRawOffset();
+            if(resource.getNextCaliDate().getTime() > zero) {
+                resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_UPLOAD);
+            }
+        }*/
+        // todo 判断是否是重新激活，若是则判断是否上传了最新校准文件，若无则状态改为“待上传”
         if (resource.getStatus().equals(CommonConstants.INSTRU_CALI_STATUS_UPLOAD)) {
             fileRepository.updateToOld(resource.getId());
+        } else {
+            long current=System.currentTimeMillis();//当前时间毫秒数
+            long zero=current/(1000*3600*24)*(1000*3600*24)- TimeZone.getDefault().getRawOffset()-1;
+            Set<Long> caliIds = new HashSet<>();
+            caliIds.add(resource.getId());
+            List<CalibrationFile> files = fileRepository.findByCaliIdInAndIsLatest(caliIds, true);
+            if (ValidationUtil.isNotEmpty(files)) {
+                if(resource.getNextCaliDate().getTime() > zero) {
+                    resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_FINISHED);
+                } else {
+                    resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
+                }
+            } else {
+                if(resource.getNextCaliDate().getTime() > zero) {
+                    resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_UPLOAD);
+                } else {
+                    resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
+                }
+            }
         }
         // 资产号唯一性校验
         if (resource.getAssetNum() != null) {
@@ -164,7 +192,7 @@ public class InstruCaliServiceImpl implements InstruCaliService {
         // todo 生成日志记录
         if (ValidationUtil.isBlank(str)) {
 //            throw new BadRequestException("No Change Found!未检测到变化！无须重复提交！");
-            str="未检测到值变化";
+            str = "未检测到值变化";
         }
         ToolsLog log = new ToolsLog();
         log.setBindingId(cali.getId());

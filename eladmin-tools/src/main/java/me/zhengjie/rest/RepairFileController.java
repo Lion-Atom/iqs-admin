@@ -19,8 +19,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
-import me.zhengjie.service.InstruCaliFileService;
-import me.zhengjie.service.dto.InstruCaliFileQueryCriteria;
+import me.zhengjie.service.RepairFileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,37 +30,36 @@ import java.util.Set;
 
 /**
  * @author Tong Minjie
- * @date 2022-03-14
+ * @date 2022-04-11
  */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "工具：仪器校准报告管理")
-@RequestMapping("/api/instruCaliFile")
-public class InstruCaliFileController {
+@Api(tags = "工具：设备维修验确认单管理")
+@RequestMapping("/api/repairFile")
+public class RepairFileController {
 
-    private final InstruCaliFileService fileService;
+    private final RepairFileService fileService;
 
-    @ApiOperation("查询仪器校准报告")
-    @PostMapping(value = "/getByExample")
-    @PreAuthorize("@el.check('calibration:list')")
-    public ResponseEntity<Object> getByExample(@RequestBody InstruCaliFileQueryCriteria criteria) {
-        return new ResponseEntity<>(fileService.queryAll(criteria), HttpStatus.OK);
+    @ApiOperation("查询设备维修验确认单")
+    @GetMapping(value = "/byRepairId")
+    @PreAuthorize("@el.check('repair:list')")
+    public ResponseEntity<Object> getByRepairId(@RequestParam("repairId") Long repairId) {
+        return new ResponseEntity<>(fileService.getByRepairId(repairId), HttpStatus.OK);
     }
 
-    @Log("上传仪校相关附件")
-    @ApiOperation("上传仪校相关附件")
+    @Log("上传设备维修相关附件")
+    @ApiOperation("上传设备维修相关附件")
     @PostMapping
-    @PreAuthorize("@el.check('calibration:edit')")
-    public ResponseEntity<Object> uploadFile(@RequestParam("caliId") Long caliId, @RequestParam("isLatest") Boolean isLatest,
-                                             @RequestParam("caliResult") String caliResult, @RequestParam("failDesc") String failDesc, @RequestParam("file") MultipartFile file) {
-        fileService.uploadFile(caliId, isLatest, caliResult, failDesc, file);
+    @PreAuthorize("@el.check('repair:edit')")
+    public ResponseEntity<Object> uploadFile(@RequestParam("repairId") Long repairId, @RequestParam("file") MultipartFile file) {
+        fileService.uploadFile(repairId, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("删除仪校相关附件")
-    @ApiOperation("删除仪校相关附件")
+    @Log("删除设备维修相关附件")
+    @ApiOperation("删除设备维修相关附件")
     @DeleteMapping
-    @PreAuthorize("@el.check('calibration:edit')")
+    @PreAuthorize("@el.check('repair:edit')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
         fileService.delete(ids);
         return new ResponseEntity<>(HttpStatus.OK);

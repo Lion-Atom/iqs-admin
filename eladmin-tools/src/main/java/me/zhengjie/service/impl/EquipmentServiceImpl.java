@@ -37,11 +37,11 @@ public class EquipmentServiceImpl implements EquipmentService {
     public List<EquipmentDto> queryAll(EquipmentQueryCriteria criteria) {
         List<EquipmentDto> list = new ArrayList<>();
         List<Equipment> equipmentList = equipmentRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
-        if(ValidationUtil.isNotEmpty(equipmentList)) {
+        if (ValidationUtil.isNotEmpty(equipmentList)) {
             Set<Long> deptIds = new HashSet<>();
-            Map<Long,String> deptMap = new HashMap<>();
+            Map<Long, String> deptMap = new HashMap<>();
             list = equipmentMapper.toDto(equipmentList);
-            list.forEach(equip->{
+            list.forEach(equip -> {
                 deptIds.add(equip.getUseDepart());
             });
             initUseDepartName(list, deptIds, deptMap);
@@ -95,7 +95,7 @@ public class EquipmentServiceImpl implements EquipmentService {
         long total = 0L;
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             Set<Long> deptIds = new HashSet<>();
-            Map<Long,String> deptMap = new HashMap<>();
+            Map<Long, String> deptMap = new HashMap<>();
             list = equipmentMapper.toDto(page.getContent());
             list.forEach(dto -> {
                 deptIds.add(dto.getUseDepart());
@@ -120,6 +120,9 @@ public class EquipmentServiceImpl implements EquipmentService {
         if (dto.getAcceptBy() != null) {
             dto.setAcceptByList(dto.getAcceptBy().split(","));
         }
+        FileDept dept = deptRepository.findById(dto.getUseDepart()).orElseGet(FileDept::new);
+        ValidationUtil.isNull(dept.getId(), "FileDept", "id", dto.getUseDepart());
+        dto.setUseDepartName(dept.getName());
         return dto;
     }
 
@@ -141,6 +144,7 @@ public class EquipmentServiceImpl implements EquipmentService {
         // todo 填充变更项判断
         return str.toString();
     }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(Equipment resource) {

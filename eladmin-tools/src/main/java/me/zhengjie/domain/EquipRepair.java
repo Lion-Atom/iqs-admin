@@ -47,7 +47,6 @@ public class EquipRepair extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "设备ID")
     private Long equipmentId;
 
-    @NotBlank
     @ApiModelProperty(value = "维修单号")
     private String repairNum;
 
@@ -61,6 +60,9 @@ public class EquipRepair extends BaseEntity implements Serializable {
     @NotBlank
     @ApiModelProperty(value = "维修负责人")
     private String repairBy;
+
+    @ApiModelProperty(value = "维修费用")
+    private String repairCost;
 
     @NotNull
     @ApiModelProperty(value = "开始维修时间")
@@ -79,5 +81,15 @@ public class EquipRepair extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "维修步骤和过程")
     private String repairDesc;
+
+    @ApiModelProperty(value = "确认人")
+    private String confirmBy;
+
+    @ApiModelProperty(value = "确认时间")
+    private Timestamp confirmTime;
+
+    @NotNull
+    @ApiModelProperty(value = "是否确认完成")
+    private Boolean isFinished;
 
 }
