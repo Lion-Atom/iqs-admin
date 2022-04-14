@@ -20,20 +20,21 @@ import lombok.NoArgsConstructor;
 import me.zhengjie.annotation.Query;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
-* @author Zheng Jie
-* @date 2019-6-4 14:49:34
+* @author Tong Minjie
+* @date 2022-04-12 14:49:34
 */
 @Data
 @NoArgsConstructor
-public class EquipAcceptanceQueryCriteria {
+public class EquipMaintainQueryCriteria {
 
     @Query
-    private String maintainStatus;
+    private Long equipmentId;
+
+    @Query
+    private String status;
 
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> maintainDate;

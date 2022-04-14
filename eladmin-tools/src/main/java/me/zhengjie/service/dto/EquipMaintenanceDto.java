@@ -15,26 +15,43 @@
  */
 package me.zhengjie.service.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import me.zhengjie.annotation.Query;
+import lombok.Getter;
+import lombok.Setter;
+import me.zhengjie.base.BaseDTO;
+import me.zhengjie.domain.MaintainFile;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
-* @author Zheng Jie
-* @date 2019-6-4 14:49:34
-*/
-@Data
-@NoArgsConstructor
-public class EquipAcceptanceQueryCriteria {
+ * @author Tong Minjie
+ * @date 2022-04-12
+ */
+@Getter
+@Setter
+public class EquipMaintenanceDto extends BaseDTO implements Serializable {
 
-    @Query
+    private Long id;
+
+    private Long equipmentId;
+
+    private String equipName;
+
+    private String equipNum;
+
+    private Timestamp maintainDate;
+
+    private String maintainBy;
+
+    private String maintainDuration;
+
+    private String confirmBy;
+
     private String maintainStatus;
 
-    @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> maintainDate;
+    private String maintainDesc;
+
+    private List<MaintainFile> fileList = new ArrayList<>();
 }

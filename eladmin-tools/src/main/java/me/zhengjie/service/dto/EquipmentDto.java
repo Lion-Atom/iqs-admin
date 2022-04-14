@@ -40,6 +40,8 @@ public class EquipmentDto extends BaseDTO implements Serializable {
 
     private String equipNum;
 
+    private String equipStatus;
+
     private String equipModel;
 
     private String equipSpec;

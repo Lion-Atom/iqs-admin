@@ -13,28 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.service.dto;
+package me.zhengjie.service.mapstruct;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import me.zhengjie.annotation.Query;
-
-import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import me.zhengjie.base.BaseMapper;
+import me.zhengjie.domain.EquipAcceptance;
+import me.zhengjie.domain.EquipMaintenance;
+import me.zhengjie.service.dto.EquipAcceptanceDto;
+import me.zhengjie.service.dto.EquipMaintenanceDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
 /**
-* @author Zheng Jie
-* @date 2019-6-4 14:49:34
-*/
-@Data
-@NoArgsConstructor
-public class EquipAcceptanceQueryCriteria {
+ * @author TongMinjie
+ * @date 2022-04-12
+ */
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface EquipMaintenanceMapper extends BaseMapper<EquipMaintenanceDto, EquipMaintenance> {
 
-    @Query
-    private String maintainStatus;
-
-    @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> maintainDate;
 }

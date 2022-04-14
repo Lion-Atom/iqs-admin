@@ -721,4 +721,30 @@ public class CommonConstants {
      */
     public static final String INSTRU_CALI_STATUS_OVERDUE = "超时未校准";
 
+    /**
+     * 时间周期单位 - 年
+     */
+    public static final String PERIOD_UNIT_YEAR = "年";
+
+    /**
+     * 时间周期单位 - 季
+     */
+    public static final String PERIOD_UNIT_QUARTER = "季";
+
+    /**
+     * 时间周期单位 - 月
+     */
+    public static final String PERIOD_UNIT_MONTH = "月";
+
+    /**
+     * 时间周期单位 - 周
+     */
+    public static final String PERIOD_UNIT_WEEK = "周";
+
+    /**
+     * 时间周期单位 - 日
+     */
+    public static final String PERIOD_UNIT_DAY = "日";
+
+
 }

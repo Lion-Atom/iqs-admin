@@ -73,6 +73,10 @@ public class Equipment extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "资产号")
     private String assetNum;
 
+    @NotBlank
+    @ApiModelProperty(value = "设备状态")
+    private String equipStatus;
+
     @ApiModelProperty(value = "出厂日期")
     private Timestamp saleDate;
 
@@ -100,11 +104,9 @@ public class Equipment extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "使用人")
     private String useBy;
 
-    @NotBlank
-    @ApiModelProperty(value = "设备级别")
+    @ApiModelProperty(value = "设备类别")
     private String equipType;
 
-    @NotBlank
     @ApiModelProperty(value = "设备级别")
     private String equipLevel;
 

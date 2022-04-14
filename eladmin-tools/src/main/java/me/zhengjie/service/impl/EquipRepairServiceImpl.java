@@ -5,7 +5,6 @@ import me.zhengjie.domain.EquipRepair;
 import me.zhengjie.domain.Equipment;
 import me.zhengjie.domain.RepairFile;
 import me.zhengjie.domain.RepairPart;
-import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.repository.EquipRepairRepository;
 import me.zhengjie.repository.EquipmentRepository;
 import me.zhengjie.repository.RepairFileRepository;
