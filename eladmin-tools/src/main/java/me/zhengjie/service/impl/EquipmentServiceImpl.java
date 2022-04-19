@@ -1,10 +1,8 @@
 package me.zhengjie.service.impl;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.Equipment;
 import me.zhengjie.domain.FileDept;
-import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.repository.EquipmentRepository;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.service.EquipmentService;
@@ -136,6 +134,9 @@ public class EquipmentServiceImpl implements EquipmentService {
         if (ValidationUtil.isBlank(str)) {
             throw new BadRequestException("No Change Found!未检测到变化！无须重复提交！");
         }*/
+        if (resource.getIsRemind() == null || !resource.getIsRemind()) {
+            resource.setRemindDays(null);
+        }
         equipmentRepository.save(resource);
     }
 

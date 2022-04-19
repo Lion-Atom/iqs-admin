@@ -33,6 +33,8 @@ public class EquipAcceptanceDto extends BaseDTO implements Serializable {
 
     private Long equipmentId;
 
+    private String equipNum;
+
     private String equipName;
 
     private String acceptStatus;
@@ -46,6 +48,8 @@ public class EquipAcceptanceDto extends BaseDTO implements Serializable {
     private String acceptDepartName;
 
     private String acceptBy;
+
+    private Timestamp acceptTime;
 
     private String submitBy;
 

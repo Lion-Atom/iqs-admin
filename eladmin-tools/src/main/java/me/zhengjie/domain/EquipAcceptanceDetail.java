@@ -25,6 +25,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * @author Tong Minjie
@@ -33,55 +34,47 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table(name = "equip_acceptance")
-public class EquipAcceptance extends BaseEntity implements Serializable {
+@Table(name = "equip_acceptance_detail")
+public class EquipAcceptanceDetail extends BaseEntity implements Serializable {
 
     @Id
-    @Column(name = "acceptance_id")
+    @Column(name = "acceptance_detail_id")
     @NotNull(groups = Update.class)
     @ApiModelProperty(value = "ID", hidden = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
-    @ApiModelProperty(value = "设备ID")
-    private Long equipmentId;
+    @ApiModelProperty(value = "设备验收ID")
+    private Long acceptanceId;
+
+    @ApiModelProperty(value = "上级部门")
+    private Long pid;
+
+    @ApiModelProperty(value = "子节点数目", hidden = true)
+    private Integer subCount = 0;
 
     @NotBlank
-    @ApiModelProperty(value = "验收状态")
-    private String acceptStatus;
+    @ApiModelProperty(value = "明细分类")
+    private String detailCategory;
 
     @NotBlank
-    @ApiModelProperty(value = "验收参与部门人员")
-    private String acceptParticipant;
+    @ApiModelProperty(value = "明细内容标题")
+    private String detailTitle;
 
-    @ApiModelProperty(value = "验收部门")
-    private Long acceptDepart;
+    @NotBlank
+    @ApiModelProperty(value = "明细内容")
+    private String detailContent;
 
-    @ApiModelProperty(value = "验收人")
-    private String acceptBy;
+    @ApiModelProperty(value = "明细附注")
+    private String detailDesc;
 
-    @ApiModelProperty(value = "验收时间")
-    private Timestamp acceptTime;
+    @ApiModelProperty(value = "是否正常")
+    private String isNormal;
 
-    @ApiModelProperty(value = "提交人")
-    private String submitBy;
+    @ApiModelProperty(value = "故障内容")
+    private String faultContent;
 
-    @ApiModelProperty(value = "提交时间")
-    private Timestamp submitTime;
-
-    @ApiModelProperty(value = "批准部门")
-    private Long approveDepart;
-
-    @ApiModelProperty(value = "批准人")
-    private String approveBy;
-
-    @ApiModelProperty(value = "批准时间")
-    private Timestamp approveTime;
-
-    @ApiModelProperty(value = "批准结果")
-    private String approveResult;
-
-    @ApiModelProperty(value = "不批准原因")
-    private String refuseReason;
+    @ApiModelProperty(value = "排序")
+    private Integer detailSort;
 }

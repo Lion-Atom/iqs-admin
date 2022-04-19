@@ -40,7 +40,7 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
         if (ValidationUtil.isNotEmpty(acceptList)) {
             Set<Long> deptIds = new HashSet<>();
             Set<Long> equipIds = new HashSet<>();
-            Map<Long, String> equipMap = new HashMap<>();
+            Map<Long, Equipment> equipMap = new HashMap<>();
             Map<Long, String> deptMap = new HashMap<>();
             list = acceptanceMapper.toDto(acceptList);
             initAddtional(list, deptIds, equipIds, equipMap, deptMap);
@@ -77,7 +77,7 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             Set<Long> deptIds = new HashSet<>();
             Set<Long> equipIds = new HashSet<>();
-            Map<Long, String> equipMap = new HashMap<>();
+            Map<Long, Equipment> equipMap = new HashMap<>();
             Map<Long, String> deptMap = new HashMap<>();
             list = acceptanceMapper.toDto(page.getContent());
             initAddtional(list, deptIds, equipIds, equipMap, deptMap);
@@ -88,7 +88,7 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
         return map;
     }
 
-    private void initAddtional(List<EquipAcceptanceDto> list, Set<Long> deptIds, Set<Long> equipIds, Map<Long, String> equipMap, Map<Long, String> deptMap) {
+    private void initAddtional(List<EquipAcceptanceDto> list, Set<Long> deptIds, Set<Long> equipIds, Map<Long, Equipment> equipMap, Map<Long, String> deptMap) {
         list.forEach(accept -> {
             deptIds.add(accept.getAcceptDepart());
             deptIds.add(accept.getApproveDepart());
@@ -99,7 +99,7 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
             List<Equipment> equipmentList = equipmentRepository.findByIdIn(equipIds);
             if (ValidationUtil.isNotEmpty(equipmentList)) {
                 equipmentList.forEach(dto -> {
-                    equipMap.put(dto.getId(), dto.getEquipName());
+                    equipMap.put(dto.getId(), dto);
                 });
             }
 
@@ -116,7 +116,11 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
             if (dto.getApproveDepart() != null) {
                 dto.setApproveDepartName(deptMap.get(dto.getApproveDepart()));
             }
-            dto.setEquipName(equipMap.get(dto.getEquipmentId()));
+            // 设备信息MAP-值判空
+            if (equipMap.get(dto.getEquipmentId()) != null) {
+                dto.setEquipName(equipMap.get(dto.getEquipmentId()).getEquipName());
+                dto.setEquipNum(equipMap.get(dto.getEquipmentId()).getEquipNum());
+            }
             // 获取验收参与者
             if (dto.getAcceptParticipant() != null) {
                 dto.setParticipantTags(dto.getAcceptParticipant().split(","));
@@ -149,7 +153,7 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
             throw new BadRequestException("该设备已存在验收信息，请勿重复添加！");
         }
         acceptanceRepository.save(resource);
-        if(!resource.getAcceptStatus().equals(equipment.getStatus())) {
+        if (!resource.getAcceptStatus().equals(equipment.getStatus())) {
             equipment.setStatus(resource.getAcceptStatus());
         }
         equipmentRepository.save(equipment);
