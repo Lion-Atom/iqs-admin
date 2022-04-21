@@ -43,6 +43,6 @@ public interface EquipAcceptanceRepository extends JpaRepository<EquipAcceptance
      * @param equipId 设备ID
      * @return 设备信息
      */
-    @Query(value = "SELECT * FROM equip_acceptance where equipment_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT * FROM equip_acceptance where equipment_id = ?1 limit 1", nativeQuery = true)
     EquipAcceptance findByEquipId(Long equipId);
 }

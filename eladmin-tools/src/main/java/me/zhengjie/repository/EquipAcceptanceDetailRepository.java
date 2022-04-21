@@ -39,7 +39,7 @@ public interface EquipAcceptanceDetailRepository extends JpaRepository<EquipAcce
      * @param acceptanceId 设备验收ID
      * @return 设备验收对应的明细信息
      */
-    @Query(value = "SELECT * FROM equip_acceptance_detail where acceptance_id = ?1 ", nativeQuery = true)
+    @Query(value = "SELECT * FROM equip_acceptance_detail where acceptance_id = ?1 order by detail_sort", nativeQuery = true)
     List<EquipAcceptanceDetail> findByAcceptanceId(Long acceptanceId);
 
     /**

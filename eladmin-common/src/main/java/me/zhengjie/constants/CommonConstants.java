@@ -746,5 +746,19 @@ public class CommonConstants {
      */
     public static final String PERIOD_UNIT_DAY = "日";
 
+    /**
+     * 设备验收-外观分类
+     */
+    public static final String EQUIP_ACCEPTANCE_APPEARANCE = "外观";
+
+    /**
+     * 设备验收-软件资料分类
+     */
+    public static final String EQUIP_ACCEPTANCE_SOFTWARE_INFO = "软件资料";
+
+    /**
+     * 设备验收-运转测试
+     */
+    public static final String EQUIP_ACCEPTANCE_OPERATIONAL_TEST = "运转测试";
 
 }

@@ -48,7 +48,7 @@ public class EquipAcceptanceDetail extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "设备验收ID")
     private Long acceptanceId;
 
-    @ApiModelProperty(value = "上级部门")
+    @ApiModelProperty(value = "上级设备验收明细")
     private Long pid;
 
     @ApiModelProperty(value = "子节点数目", hidden = true)
@@ -62,7 +62,6 @@ public class EquipAcceptanceDetail extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "明细内容标题")
     private String detailTitle;
 
-    @NotBlank
     @ApiModelProperty(value = "明细内容")
     private String detailContent;
 
