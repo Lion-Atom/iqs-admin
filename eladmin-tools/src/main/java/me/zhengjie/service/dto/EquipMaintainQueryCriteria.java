@@ -34,7 +34,7 @@ public class EquipMaintainQueryCriteria {
     private Long equipmentId;
 
     @Query
-    private String status;
+    private String confirmBy;
 
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> maintainDate;
