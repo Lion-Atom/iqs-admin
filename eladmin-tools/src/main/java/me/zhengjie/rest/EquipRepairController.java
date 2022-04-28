@@ -25,7 +25,6 @@ import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.service.EquipRepairService;
 import me.zhengjie.service.dto.EquipRepairDto;
 import me.zhengjie.service.dto.EquipRepairQueryCriteria;
-import me.zhengjie.utils.ValidationUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

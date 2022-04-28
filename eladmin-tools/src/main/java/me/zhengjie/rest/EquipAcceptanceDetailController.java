@@ -58,4 +58,5 @@ public class EquipAcceptanceDetailController {
         detailService.update(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }

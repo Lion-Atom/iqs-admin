@@ -17,9 +17,9 @@ import me.zhengjie.utils.QueryHelp;
 import me.zhengjie.utils.ValidationUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -92,7 +92,7 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void update(EquipMaintenanceDto resource) {
         Equipment equipment = equipmentRepository.findById(resource.getEquipmentId()).orElseGet(Equipment::new);
         ValidationUtil.isNull(equipment.getId(), "Equipment", "id", resource.getEquipmentId());
@@ -102,7 +102,7 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void create(EquipMaintenanceDto resource) {
         Equipment equipment = equipmentRepository.findById(resource.getEquipmentId()).orElseGet(Equipment::new);
         ValidationUtil.isNull(equipment.getId(), "Equipment", "id", resource.getEquipmentId());
@@ -121,14 +121,14 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
-        maintenanceRepository.deleteAllByIdIn(ids);
         List<Long> list = new ArrayList<>(ids);
         EquipMaintenance maintenance = maintenanceRepository.findById(list.get(0)).orElseGet(EquipMaintenance::new);
         ValidationUtil.isNull(maintenance.getId(), "EquipMaintenance", "id", list.get(0));
         Equipment equipment = equipmentRepository.findById(maintenance.getEquipmentId()).orElseGet(Equipment::new);
         ValidationUtil.isNull(equipment.getId(), "Equipment", "id", maintenance.getEquipmentId());
+        maintenanceRepository.deleteAllByIdIn(ids);
         EquipMaintenance max = maintenanceRepository.findMaxByEquipId(maintenance.getEquipmentId());
         setEquipMaintenanceInfo(equipment, max);
     }

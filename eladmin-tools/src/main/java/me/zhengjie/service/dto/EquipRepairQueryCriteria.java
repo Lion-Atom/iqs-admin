@@ -20,9 +20,7 @@ import lombok.NoArgsConstructor;
 import me.zhengjie.annotation.Query;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
 * @author Tong Minjie
@@ -32,18 +30,15 @@ import java.util.Set;
 @NoArgsConstructor
 public class EquipRepairQueryCriteria {
 
-    @Query(blurry = "equipName,equipProvider,equipNum,assetNum")
-    private String blurry;
+    @Query
+    private Long equipmentId;
 
-    @Query(blurry = "acceptDepart")
-    private String acceptDepart;
-
-    @Query(propName = "useDepart", type = Query.Type.IN)
-    private Set<Long> useDepartIds = new HashSet<>();
+    @Query(blurry = "confirmBy")
+    private String confirmBy;
 
     @Query
-    private String status;
+    private Boolean isFinished;
 
     @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> createTime;
+    private List<Timestamp> shutTime;
 }

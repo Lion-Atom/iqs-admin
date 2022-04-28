@@ -33,8 +33,14 @@ import java.util.Set;
 public class EquipAcceptanceQueryCriteria {
 
     @Query
-    private String maintainStatus;
+    private Long equipmentId;
+
+    @Query
+    private Long acceptDepart;
+
+    @Query
+    private String acceptStatus;
 
     @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> maintainDate;
+    private List<Timestamp> acceptTime;
 }

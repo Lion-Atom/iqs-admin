@@ -32,7 +32,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class EquipmentQueryCriteria {
 
-    @Query(blurry = "equipName,equipProvider,equipNum,assetNum")
+    @Query(blurry = "equipName,equipProvider,equipNum,assetNum,equipModel")
     private String blurry;
 
     private Long useDepart;
