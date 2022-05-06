@@ -54,11 +54,11 @@ public class TrainNewStaffController {
 
     private final FileDeptService fileDeptService;
     private final TrainNewStaffService staffService;
-    private static final String ENTITY_NAME = "Equipment";
+    private static final String ENTITY_NAME = "TrainNewStaff";
 
     @ApiOperation("导出新员工培训数据")
     @GetMapping(value = "/download")
-    @PreAuthorize("@el.check('equip:list')")
+    @PreAuthorize("@el.check('train:list')")
     public void download(HttpServletResponse response, TrainNewStaffQueryCriteria criteria) throws IOException {
         //部门查询
         initDepartChildren(criteria);
@@ -67,7 +67,7 @@ public class TrainNewStaffController {
 
     @ApiOperation("查询新员工培训信息")
     @GetMapping
-    @PreAuthorize("@el.check('equip:list')")
+    @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> query(TrainNewStaffQueryCriteria criteria, Pageable pageable) {
         //部门查询
         initDepartChildren(criteria);
@@ -76,7 +76,7 @@ public class TrainNewStaffController {
 
     @ApiOperation("查询单个新员工培训信息")
     @GetMapping(value = "/byId")
-    @PreAuthorize("@el.check('equip:list')")
+    @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> getById(@RequestParam("id") Long id) {
         return new ResponseEntity<>(staffService.findById(id), HttpStatus.OK);
     }
@@ -84,7 +84,7 @@ public class TrainNewStaffController {
     @Log("新增新员工培训信息")
     @ApiOperation("新增新员工培训信息")
     @PostMapping
-    @PreAuthorize("@el.check('equip:add')")
+    @PreAuthorize("@el.check('newStaff:add')")
     public ResponseEntity<Object> create(@Validated @RequestBody TrainNewStaff resource) {
         if (resource.getId() != null) {
             throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
@@ -96,7 +96,7 @@ public class TrainNewStaffController {
     @Log("修改新员工培训信息")
     @ApiOperation("修改新员工培训信息")
     @PutMapping
-    @PreAuthorize("@el.check('equip:edit')")
+    @PreAuthorize("@el.check('newStaff:edit')")
     public ResponseEntity<Object> update(@Validated(TrainNewStaff.Update.class) @RequestBody TrainNewStaff resource) {
         staffService.update(resource);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -105,7 +105,7 @@ public class TrainNewStaffController {
     @Log("删除新员工培训信息")
     @ApiOperation("删除新员工培训信息")
     @DeleteMapping
-    @PreAuthorize("@el.check('equip:del')")
+    @PreAuthorize("@el.check('newStaff:del')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
         // 验证是否被审核计划关联
         // caliOrgService.verification(ids);

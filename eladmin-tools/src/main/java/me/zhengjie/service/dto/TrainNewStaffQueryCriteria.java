@@ -41,6 +41,9 @@ public class TrainNewStaffQueryCriteria {
     private Set<Long> departIds = new HashSet<>();
 
     @Query
+    private String staffType;
+
+    @Query
     private Boolean isFinished;
 
     @Query(type = Query.Type.BETWEEN)
