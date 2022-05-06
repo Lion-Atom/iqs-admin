@@ -77,7 +77,11 @@ public class EquipmentServiceImpl implements EquipmentService {
             map.put("设备状态", dto.getStatus());
             map.put("保养级别", dto.getMaintainLevel());
             map.put("上次保养时间", dto.getLastMaintainDate());
-            map.put("保养周期", dto.getMaintainPeriod());
+            if (dto.getMaintainPeriod() != null && dto.getMaintainPeriodUnit() != null) {
+                map.put("保养周期", dto.getMaintainPeriod() + dto.getMaintainPeriodUnit());
+            } else {
+                map.put("保养周期", null);
+            }
             map.put("保养到期日期", dto.getMaintainDueDate());
             map.put("创建日期", dto.getCreateTime());
             list.add(map);
@@ -136,6 +140,9 @@ public class EquipmentServiceImpl implements EquipmentService {
         }*/
         if (resource.getIsRemind() == null || !resource.getIsRemind()) {
             resource.setRemindDays(null);
+        }
+        if (resource.getLastMaintainDate() == null) {
+            resource.setMaintainDueDate(null);
         }
         equipmentRepository.save(resource);
     }

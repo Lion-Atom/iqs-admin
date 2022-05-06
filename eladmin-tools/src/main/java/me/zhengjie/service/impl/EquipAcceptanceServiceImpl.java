@@ -363,6 +363,7 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
     public void delete(Set<Long> ids) {
         acceptanceRepository.deleteAllByIdIn(ids);
         // 关联删除设备项目
+        detailRepository.deleteByAcceptanceIdIn(ids);
         equipmentRepository.rollbackEquipStatus(ids);
     }
 

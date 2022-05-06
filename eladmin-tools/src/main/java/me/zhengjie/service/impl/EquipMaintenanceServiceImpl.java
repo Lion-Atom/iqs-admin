@@ -74,6 +74,7 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
             map.put("保养日期", ValidationUtil.transToDate(dto.getMaintainDate()));
             map.put("保养人员", dto.getMaintainBy());
             map.put("保养时长", dto.getMaintainDuration());
+            map.put("保养结果", dto.getMaintainStatus());
             map.put("确认人", dto.getConfirmBy());
             map.put("创建时间", dto.getCreateTime());
             list.add(map);
@@ -138,18 +139,23 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
             equipment.setLastMaintainDate(max.getMaintainDate());
             // todo 根据上次设置到期日期
             long unit = (long) (24 * 3600 * 1000);
-            if (equipment.getMaintainPeriodUnit().equals(CommonConstants.PERIOD_UNIT_YEAR)) {
-                // 年度
-                unit = 360 * unit;
-            } else if (equipment.getMaintainPeriodUnit().equals(CommonConstants.PERIOD_UNIT_QUARTER)) {
-                // 季度-3个月
-                unit = 90 * unit;
-            } else if (equipment.getMaintainPeriodUnit().equals(CommonConstants.PERIOD_UNIT_MONTH)) {
-                // 月
-                unit = 30 * unit;
-            } else if (equipment.getMaintainPeriodUnit().equals(CommonConstants.PERIOD_UNIT_WEEK)) {
-                // 周
-                unit = 7 * unit;
+            switch (equipment.getMaintainPeriodUnit()) {
+                case CommonConstants.PERIOD_UNIT_YEAR:
+                    // 年度
+                    unit = 360 * unit;
+                    break;
+                case CommonConstants.PERIOD_UNIT_QUARTER:
+                    // 季度-3个月
+                    unit = 90 * unit;
+                    break;
+                case CommonConstants.PERIOD_UNIT_MONTH:
+                    // 月
+                    unit = 30 * unit;
+                    break;
+                case CommonConstants.PERIOD_UNIT_WEEK:
+                    // 周
+                    unit = 7 * unit;
+                    break;
             }
             long dueDate = equipment.getLastMaintainDate().getTime() + unit * equipment.getMaintainPeriod();
             equipment.setMaintainDueDate(new Timestamp(dueDate));

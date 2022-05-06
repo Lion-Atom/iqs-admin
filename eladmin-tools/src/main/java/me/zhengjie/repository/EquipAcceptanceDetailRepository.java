@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -43,11 +44,11 @@ public interface EquipAcceptanceDetailRepository extends JpaRepository<EquipAcce
     List<EquipAcceptanceDetail> findByAcceptanceId(Long acceptanceId);
 
     /**
-     * 根据设备验收ID删除8D分数分布
+     * 根据设备验收ID删除设备验收明细项目
      *
-     * @param acceptanceId 设备验收ID
+     * @param acceptanceIds 设备验收IDs
      */
     @Modifying
-    @Query(value = " delete from equip_acceptance_detail where acceptance_id = ?1 ", nativeQuery = true)
-    void deleteByAcceptanceId(Long acceptanceId);
+    @Query(value = " delete from equip_acceptance_detail where acceptance_id in ?1 ", nativeQuery = true)
+    void deleteByAcceptanceIdIn(Set<Long>  acceptanceIds);
 }
