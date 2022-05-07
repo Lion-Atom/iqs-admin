@@ -19,7 +19,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.domain.TrNewStaffFile;
 import me.zhengjie.service.RepairFileService;
+import me.zhengjie.service.TrNewStaffFileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,32 +36,32 @@ import java.util.Set;
  */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "工具：设备维修验确认单管理")
-@RequestMapping("/api/repairFile")
-public class RepairFileController {
+@Api(tags = "工具：新员工培训确认单")
+@RequestMapping("/api/trNewStaffFile")
+public class TrNewStaffFileController {
 
-    private final RepairFileService fileService;
+    private final TrNewStaffFileService fileService;
 
-    @ApiOperation("查询设备维修验收确认单")
-    @GetMapping(value = "/byRepairId")
-    @PreAuthorize("@el.check('repair:list')")
-    public ResponseEntity<Object> getByRepairId(@RequestParam("repairId") Long repairId) {
-        return new ResponseEntity<>(fileService.getByRepairId(repairId), HttpStatus.OK);
+    @ApiOperation("查询新员工培训确认单")
+    @GetMapping(value = "/byTrNewStaffId")
+    @PreAuthorize("@el.check('train:list')")
+    public ResponseEntity<Object> getByTrNewStaffId(@RequestParam("trNewStaffId") Long trNewStaffId) {
+        return new ResponseEntity<>(fileService.getByTrNewStaffId(trNewStaffId), HttpStatus.OK);
     }
 
-    @Log("上传设备维修相关附件")
-    @ApiOperation("上传设备维修相关附件")
+    @Log("上传新员工培训相关附件")
+    @ApiOperation("上传新员工培训相关附件")
     @PostMapping
-    @PreAuthorize("@el.check('repair:edit')")
-    public ResponseEntity<Object> uploadFile(@RequestParam("repairId") Long repairId, @RequestParam("file") MultipartFile file) {
-        fileService.uploadFile(repairId, file);
+    @PreAuthorize("@el.check('newStaff:edit')")
+    public ResponseEntity<Object> uploadFile(@RequestParam("trNewStaffId") Long trNewStaffId, @RequestParam("file") MultipartFile file) {
+        fileService.uploadFile(trNewStaffId, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("删除设备维修相关附件")
-    @ApiOperation("删除设备维修相关附件")
+    @Log("删除新员工培训相关附件")
+    @ApiOperation("删除新员工培训相关附件")
     @DeleteMapping
-    @PreAuthorize("@el.check('repair:edit')")
+    @PreAuthorize("@el.check('newStaff:edit')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
         fileService.delete(ids);
         return new ResponseEntity<>(HttpStatus.OK);

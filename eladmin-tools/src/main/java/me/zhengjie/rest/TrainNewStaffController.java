@@ -28,6 +28,7 @@ import me.zhengjie.service.FileDeptService;
 import me.zhengjie.service.TrainNewStaffService;
 import me.zhengjie.service.dto.EquipmentQueryByExample;
 import me.zhengjie.service.dto.EquipmentQueryCriteria;
+import me.zhengjie.service.dto.TrainNewStaffDto;
 import me.zhengjie.service.dto.TrainNewStaffQueryCriteria;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -85,7 +86,7 @@ public class TrainNewStaffController {
     @ApiOperation("新增新员工培训信息")
     @PostMapping
     @PreAuthorize("@el.check('newStaff:add')")
-    public ResponseEntity<Object> create(@Validated @RequestBody TrainNewStaff resource) {
+    public ResponseEntity<Object> create(@Validated @RequestBody TrainNewStaffDto resource) {
         if (resource.getId() != null) {
             throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
         }

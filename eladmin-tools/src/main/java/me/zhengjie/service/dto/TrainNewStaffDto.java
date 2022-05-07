@@ -15,19 +15,15 @@
  */
 package me.zhengjie.service.dto;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import me.zhengjie.base.BaseDTO;
-import me.zhengjie.base.BaseEntity;
+import me.zhengjie.domain.TrNewStaffFile;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Tong Minjie
@@ -65,4 +61,5 @@ public class TrainNewStaffDto extends BaseDTO implements Serializable {
 
     private String reason;
 
+    private List<TrNewStaffFile> fileList = new ArrayList<>();
 }

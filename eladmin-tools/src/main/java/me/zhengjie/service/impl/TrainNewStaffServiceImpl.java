@@ -5,6 +5,7 @@ import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainNewStaff;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.FileDeptRepository;
+import me.zhengjie.repository.TrNewStaffFileRepository;
 import me.zhengjie.repository.TrainNewStaffRepository;
 import me.zhengjie.service.TrainNewStaffService;
 import me.zhengjie.service.dto.TrainNewStaffDto;
@@ -28,6 +29,7 @@ import java.util.*;
 public class TrainNewStaffServiceImpl implements TrainNewStaffService {
 
     private final TrainNewStaffRepository staffRepository;
+    private final TrNewStaffFileRepository fileRepository;
     private final FileDeptRepository deptRepository;
     private final TrainNewStaffMapper staffMapper;
 
@@ -113,13 +115,14 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
         }
         if (entity.getIsFinished()) {
             resource.setReason(null);
+            fileRepository.deleteByTrNewStaffId(resource.getId());
         }
         staffRepository.save(resource);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(TrainNewStaff resource) {
+    public void create(TrainNewStaffDto resource) {
         TrainNewStaff staff = staffRepository.findAllByStaffName(resource.getStaffName());
         if (staff != null) {
             throw new EntityExistException(TrainNewStaff.class, "staffName", resource.getStaffName());
@@ -131,13 +134,21 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
         if (resource.getIsFinished()) {
             resource.setReason(null);
         }
-        staffRepository.save(resource);
+        TrainNewStaff trNewStaff = staffRepository.save(staffMapper.toEntity(resource));
+        // 文件列表
+        if (ValidationUtil.isNotEmpty(resource.getFileList())) {
+            resource.getFileList().forEach(file -> {
+                file.setTrNewStaffId(trNewStaff.getId());
+            });
+            fileRepository.saveAll(resource.getFileList());
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
         staffRepository.deleteAllByIdIn(ids);
-        // todo 删除相关附件
+        // 删除相关附件
+        fileRepository.deleteByTrNewStaffIdIn(ids);
     }
 }

@@ -63,7 +63,7 @@ public interface TrainNewStaffService {
      *
      * @param resource 仪器校准信息
      */
-    void create(TrainNewStaff resource);
+    void create(TrainNewStaffDto resource);
 
     /**
      * 删除
