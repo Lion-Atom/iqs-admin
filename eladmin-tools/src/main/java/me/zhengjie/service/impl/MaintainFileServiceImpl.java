@@ -25,6 +25,7 @@ public class MaintainFileServiceImpl implements MaintainFileService {
     private final FileProperties properties;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void uploadFile(Long maintainId, MultipartFile multipartFile) {
         FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());

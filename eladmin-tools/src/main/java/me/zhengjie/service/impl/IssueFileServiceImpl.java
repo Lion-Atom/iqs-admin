@@ -55,6 +55,7 @@ public class IssueFileServiceImpl implements IssueFileService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public IssueFile create(Long issueId, String stepName, MultipartFile multipartFile) {
         // 权限校验
         teamMemberService.checkEditAuthorized(issueId);

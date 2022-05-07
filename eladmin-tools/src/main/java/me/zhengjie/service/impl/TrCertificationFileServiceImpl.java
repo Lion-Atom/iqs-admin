@@ -3,11 +3,15 @@ package me.zhengjie.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.config.FileProperties;
-import me.zhengjie.domain.RepairFile;
+import me.zhengjie.domain.TrCertificationFile;
+import me.zhengjie.domain.TrNewStaffFile;
 import me.zhengjie.exception.BadRequestException;
-import me.zhengjie.repository.EquipRepairRepository;
-import me.zhengjie.repository.RepairFileRepository;
-import me.zhengjie.service.RepairFileService;
+import me.zhengjie.repository.TrCertificationFileRepository;
+import me.zhengjie.repository.TrNewStaffFileRepository;
+import me.zhengjie.repository.TrainCertificationRepository;
+import me.zhengjie.repository.TrainNewStaffRepository;
+import me.zhengjie.service.TrCertificationFileService;
+import me.zhengjie.service.TrNewStaffFileService;
 import me.zhengjie.utils.FileUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,15 +23,15 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class RepairFileServiceImpl implements RepairFileService {
+public class TrCertificationFileServiceImpl implements TrCertificationFileService {
 
-    private final RepairFileRepository fileRepository;
+    private final TrCertificationFileRepository fileRepository;
     private final FileProperties properties;
-    private final EquipRepairRepository repairRepository;
+    private final TrainCertificationRepository certificationRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadFile(Long repairId, MultipartFile multipartFile) {
+    public void uploadFile(Long trCertificationId, MultipartFile multipartFile) {
         FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
         assert suffix != null;
@@ -39,17 +43,18 @@ public class RepairFileServiceImpl implements RepairFileService {
         }
         try {
 
-            RepairFile repairFile = new RepairFile(
-                    repairId,
+            TrCertificationFile certificationFile = new TrCertificationFile(
+                    trCertificationId,
                     multipartFile.getOriginalFilename(),
                     file.getName(),
                     suffix,
                     file.getPath(),
                     type,
-                    FileUtil.getSize(multipartFile.getSize())
+                    FileUtil.getSize(multipartFile.getSize()),
+                    0L
             );
 
-            fileRepository.save(repairFile);
+            fileRepository.save(certificationFile);
 
         } catch (Exception e) {
             FileUtil.del(file);
@@ -58,22 +63,14 @@ public class RepairFileServiceImpl implements RepairFileService {
     }
 
     @Override
-    public List<RepairFile> getByRepairId(Long repairId) {
-        /*EquipRepair repair = repairRepository.findById(repairId).orElseGet(EquipRepair::new);
-        ValidationUtil.isNull(repair.getId(), "EquipRepair", "id", repairId);*/
-        return fileRepository.findByRepairId(repairId);
-    }
-
-    @Override
-    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
-    public void delete(Set<Long> ids) {
-        // 删除
-        fileRepository.deleteAllByIdIn(ids);
+    public List<TrCertificationFile> getByTrCertificationId(Long trCertificationId) {
+        return fileRepository.findByTrCertificationId(trCertificationId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delByRepairIdAndName(Long repairId, String realName) {
-
+    public void delete(Set<Long> ids) {
+        // 删除
+        fileRepository.deleteAllByIdIn(ids);
     }
 }

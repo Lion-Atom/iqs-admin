@@ -31,6 +31,7 @@ public class TrNewStaffFileServiceImpl implements TrNewStaffFileService {
     private final TrainNewStaffRepository staffRepository;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void uploadFile(Long trNewStaffId, MultipartFile multipartFile) {
         FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());

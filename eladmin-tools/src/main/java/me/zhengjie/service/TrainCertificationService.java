@@ -1,7 +1,10 @@
 package me.zhengjie.service;
 
+import me.zhengjie.domain.TrainCertification;
 import me.zhengjie.domain.TrainNewStaff;
-import me.zhengjie.service.dto.TrainNewStaffDto;
+import me.zhengjie.service.dto.TrainCertificationDto;
+import me.zhengjie.service.dto.TrainCertificationDto;
+import me.zhengjie.service.dto.TrainCertificationQueryCriteria;
 import me.zhengjie.service.dto.TrainNewStaffQueryCriteria;
 import org.springframework.data.domain.Pageable;
 
@@ -13,9 +16,9 @@ import java.util.Set;
 
 /**
  * @author TongMin Jie
- * @date 2022-05-06
+ * @date 2022-05-07
  */
-public interface TrainNewStaffService {
+public interface TrainCertificationService {
 
     /**
      * 查询全部数据
@@ -23,7 +26,7 @@ public interface TrainNewStaffService {
      * @param criteria /
      * @return /
      */
-    List<TrainNewStaffDto> queryAll(TrainNewStaffQueryCriteria criteria);
+    List<TrainCertificationDto> queryAll(TrainCertificationQueryCriteria criteria);
 
     /**
      * 导出数据
@@ -32,7 +35,7 @@ public interface TrainNewStaffService {
      * @param response /
      * @throws IOException /
      */
-    void download(List<TrainNewStaffDto> queryAll, HttpServletResponse response) throws IOException;
+    void download(List<TrainCertificationDto> queryAll, HttpServletResponse response) throws IOException;
 
     /**
      * 分页查询
@@ -41,29 +44,29 @@ public interface TrainNewStaffService {
      * @param pageable 分页参数
      * @return /
      */
-    Map<String, Object> queryAll(TrainNewStaffQueryCriteria criteria, Pageable pageable);
+    Map<String, Object> queryAll(TrainCertificationQueryCriteria criteria, Pageable pageable);
 
     /**
-     * 根据ID查询新员工培训信息
+     * 根据ID查询培训-认证信息
      *
      * @param id /
      * @return /
      */
-    TrainNewStaffDto findById(Long id);
+    TrainCertificationDto findById(Long id);
 
     /**
      * 更新
      *
-     * @param resource 新员工培训信息
+     * @param resource 培训-认证信息
      */
-    void update(TrainNewStaff resource);
+    void update(TrainCertification resource);
 
     /**
-     * 新增新员工培训信息
+     * 新增培训-认证信息
      *
-     * @param resource 新员工培训信息
+     * @param resource 培训-认证信息
      */
-    void create(TrainNewStaffDto resource);
+    void create(TrainCertificationDto resource);
 
     /**
      * 删除
