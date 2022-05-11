@@ -61,11 +61,11 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
             map.put("验收参与部门人员", dto.getAcceptParticipant());
             map.put("验收部门", dto.getAcceptDepartName());
             map.put("验收人", dto.getAcceptBy());
-            map.put("提交人", dto.getSubmitBy());
-            map.put("提交时间", dto.getSubmitTime());
+            map.put("验收提交人", dto.getSubmitBy());
+            map.put("验收提交时间", dto.getSubmitTime());
             map.put("批准部门", dto.getAcceptDepartName());
             map.put("批准人", dto.getAcceptBy());
-            map.put("批准日期", dto.getSubmitTime());
+            map.put("批准日期", dto.getApproveTime());
             map.put("创建日期", dto.getCreateTime());
             list.add(map);
         }

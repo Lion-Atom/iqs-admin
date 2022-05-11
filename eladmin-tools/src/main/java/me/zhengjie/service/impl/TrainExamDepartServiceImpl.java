@@ -76,7 +76,6 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
         if (!resource.getCreateBy().equals(username) && !isAdmin) {
             // 非创建者亦非管理员则无权限修改和删除
             throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
-
         }
     }
 
