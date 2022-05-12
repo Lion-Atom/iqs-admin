@@ -18,10 +18,9 @@ package me.zhengjie.service.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import me.zhengjie.base.BaseDTO;
-import me.zhengjie.domain.TrNewStaffFile;
+import me.zhengjie.domain.TrExamStaffTranscript;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,37 +30,21 @@ import java.util.List;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TrainNewStaffDto extends BaseDTO implements Serializable {
+public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private Long id;
 
-    private String staffType;
-
     private String staffName;
-
-    private Timestamp hireDate;
 
     private Long departId;
 
-    private String departName;
-
-    private String workshop;
-
-    private String team;
-
     private String superior;
-
-    private String jobNum;
 
     private String jobName;
 
+    private String workshop;
+
     private String jobType;
 
-    private String trainContent;
-
-    private Boolean isFinished;
-
-    private String reason;
-
-    private List<TrNewStaffFile> fileList = new ArrayList<>();
+    private List<TrExamStaffTranscriptDto> fileList = new ArrayList<>();
 }

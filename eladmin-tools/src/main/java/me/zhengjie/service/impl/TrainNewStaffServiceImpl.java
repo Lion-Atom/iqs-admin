@@ -15,6 +15,7 @@ import me.zhengjie.utils.FileUtil;
 import me.zhengjie.utils.PageUtil;
 import me.zhengjie.utils.QueryHelp;
 import me.zhengjie.utils.ValidationUtil;
+import org.apache.poi.hssf.record.ObjRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -87,8 +88,23 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
 
     @Override
     public Map<String, Object> queryAll(TrainNewStaffQueryCriteria criteria, Pageable pageable) {
+        Map<String, Object> map = new HashMap<>();
         Page<TrainNewStaff> page = staffRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
-        return PageUtil.toPage(page);
+        List<TrainNewStaffDto> list = new ArrayList<>();
+        long total = 0L;
+        if (ValidationUtil.isNotEmpty(page.getContent())) {
+            Set<Long> deptIds = new HashSet<>();
+            Map<Long, String> deptMap = new HashMap<>();
+            list = staffMapper.toDto(page.getContent());
+            list.forEach(staff -> {
+                deptIds.add(staff.getDepartId());
+            });
+            initStaffDepartName(list, deptIds, deptMap);
+            total = page.getTotalElements();
+        }
+        map.put("content", list);
+        map.put("totalElements", total);
+        return map;
     }
 
     @Override
@@ -115,6 +131,7 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
         }
         if (entity.getIsFinished()) {
             resource.setReason(null);
+        } else {
             fileRepository.deleteByTrNewStaffId(resource.getId());
         }
         staffRepository.save(resource);
