@@ -13,29 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.service.dto;
+package me.zhengjie.service.mapstruct;
 
-import lombok.Data;
-import me.zhengjie.annotation.Query;
-
-import java.sql.Timestamp;
-import java.util.List;
+import me.zhengjie.base.BaseMapper;
+import me.zhengjie.domain.TrExamDepartFile;
+import me.zhengjie.domain.TrainMaterialFile;
+import me.zhengjie.service.dto.TrExamDepartFileDto;
+import me.zhengjie.service.dto.TrainMaterialFileDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
 /**
- * 审批进度查询类
- *
- * @author Tong Minjie
- * @date 2022-05-10 11:29:07
+ * @author TongMinjie
+ * @date 2022-05-12
  */
-@Data
-public class TrExamDepartFileQueryCriteria {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface TrainMaterialFileMapper extends BaseMapper<TrainMaterialFileDto, TrainMaterialFile> {
 
-    @Query(blurry = "name,realName,createBy,updateBy,fileDesc")
-    private String blurry;
-
-    @Query(propName = "departId", type = Query.Type.EQUAL)
-    private Long departId;
-
-    @Query(type = Query.Type.BETWEEN)
-    private List<Timestamp> createTime;
 }

@@ -28,13 +28,19 @@ import java.util.List;
  * @date 2022-05-10 11:29:07
  */
 @Data
-public class TrExamDepartFileQueryCriteria {
+public class TrainMaterialFileQueryCriteria {
 
     @Query(blurry = "name,realName,createBy,updateBy,fileDesc")
     private String blurry;
 
     @Query(propName = "departId", type = Query.Type.EQUAL)
     private Long departId;
+
+    @Query(propName = "isInternal", type = Query.Type.EQUAL)
+    private Boolean isInternal;
+
+    @Query(propName = "toolType", type = Query.Type.EQUAL)
+    private String toolType;
 
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> createTime;

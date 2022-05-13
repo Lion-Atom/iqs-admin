@@ -9,17 +9,25 @@ import java.io.Serializable;
 /**
  * @author TongMin Jie
  * @version V1
- * @date 2022/5/11 9:35
+ * @date 2022/5/12 13:39
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TrExamDepartFileDto extends BaseDTO implements Serializable {
+public class TrainMaterialFileDto extends BaseDTO implements Serializable {
 
     private Long id;
 
     private Long departId;
 
     private String departName;
+
+    private String author;
+
+    private String version;
+
+    private Boolean isInternal;
+
+    private String toolType;
 
     private String realName;
 
@@ -34,8 +42,4 @@ public class TrExamDepartFileDto extends BaseDTO implements Serializable {
     private String type;
 
     private String size;
-
-    private Boolean enabled;
-
-    private boolean hasDownloadAuthority = true;
 }

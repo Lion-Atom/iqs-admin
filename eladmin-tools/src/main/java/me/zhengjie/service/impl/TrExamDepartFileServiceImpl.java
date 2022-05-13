@@ -4,8 +4,10 @@ import cn.hutool.core.util.ObjectUtil;
 import lombok.RequiredArgsConstructor;
 
 import me.zhengjie.config.FileProperties;
+import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrExamDepartFile;
 import me.zhengjie.exception.BadRequestException;
+import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrExamDepartFileRepository;
 import me.zhengjie.repository.TrainExamDepartRepository;
 import me.zhengjie.service.TrExamDepartFileService;
@@ -19,7 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.StyledEditorKit;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -32,7 +37,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
 
-    private final TrainExamDepartRepository departRepository;
+    private final FileDeptRepository departRepository;
     private final TrExamDepartFileMapper departFileMapper;
     private final TrExamDepartFileRepository fileRepository;
     private final FileProperties properties;
@@ -40,7 +45,7 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadFile(Long departId, String name, String fileDesc, MultipartFile multipartFile) {
+    public void uploadFile(Long departId, String name, Boolean enabled, String fileDesc, MultipartFile multipartFile) {
         FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
         assert suffix != null;
@@ -60,7 +65,8 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
                     suffix,
                     file.getPath(),
                     type,
-                    FileUtil.getSize(multipartFile.getSize())
+                    FileUtil.getSize(multipartFile.getSize()),
+                    enabled
             );
 
             fileRepository.save(trExamDepartFile);
@@ -109,5 +115,53 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
             throw new BadRequestException("当前考试题库中存在同名文件！请修改名称！");
         }
         fileRepository.save(resources);
+    }
+
+    @Override
+    public List<TrExamDepartFileDto> queryAll(TrExamDepartFileQueryCriteria criteria) {
+        List<TrExamDepartFileDto> list = new ArrayList<>();
+        List<TrExamDepartFile> staffs = fileRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+        if (ValidationUtil.isNotEmpty(staffs)) {
+            Set<Long> deptIds = new HashSet<>();
+            Map<Long, String> deptMap = new HashMap<>();
+            list = departFileMapper.toDto(staffs);
+            list.forEach(staff -> {
+                deptIds.add(staff.getDepartId());
+            });
+            initDepartName(list, deptIds, deptMap);
+        }
+        return list;
+    }
+
+    private void initDepartName(List<TrExamDepartFileDto> list, Set<Long> deptIds, Map<Long, String> deptMap) {
+        if (!deptIds.isEmpty()) {
+            List<FileDept> deptList = departRepository.findByIdIn(deptIds);
+            deptList.forEach(dept -> {
+                deptMap.put(dept.getId(), dept.getName());
+            });
+            if (ValidationUtil.isNotEmpty(deptList)) {
+                list.forEach(dto -> {
+                    dto.setDepartName(deptMap.get(dto.getDepartId()));
+                });
+            }
+        }
+    }
+
+    @Override
+    public void download(List<TrExamDepartFileDto> queryAll, HttpServletResponse response) throws IOException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (TrExamDepartFileDto dto : queryAll) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("试卷名称", dto.getName());
+            map.put("部门", dto.getDepartName());
+            map.put("试卷状态", dto.getEnabled() ? "有效" : "废除");
+            map.put("试卷描述", dto.getFileDesc());
+            map.put("试卷格式", dto.getType());
+            map.put("试卷大小", dto.getSize());
+            map.put("创建日期", dto.getCreateTime());
+            map.put("创建人", dto.getCreateBy());
+            list.add(map);
+        }
+        FileUtil.downloadExcel(list, response);
     }
 }

@@ -24,6 +24,7 @@ import lombok.Setter;
 import me.zhengjie.base.BaseEntity;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -34,12 +35,12 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Entity
-@Table(name = "train_exam_depart_file")
+@Table(name = "train_material_file")
 @NoArgsConstructor
-public class TrExamDepartFile extends BaseEntity implements Serializable {
+public class TrainMaterialFile extends BaseEntity implements Serializable {
 
     @Id
-    @Column(name = "tr_exam_depart_file_id")
+    @Column(name = "train_material_file_id")
     @ApiModelProperty(value = "ID", hidden = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,6 +49,20 @@ public class TrExamDepartFile extends BaseEntity implements Serializable {
     @Column(name = "depart_id")
     @ApiModelProperty(value = "部门ID")
     private Long departId;
+
+    @ApiModelProperty(value = "作者")
+    private String author;
+
+    @ApiModelProperty(value = "版本")
+    private String version;
+
+    @NotNull
+    @ApiModelProperty(value = "是否是内部材料")
+    private Boolean isInternal;
+
+    @NotBlank
+    @ApiModelProperty(value = "认证专业工具类型")
+    private String toolType;
 
     @ApiModelProperty(value = "真实文件名")
     private String realName;
@@ -71,13 +86,16 @@ public class TrExamDepartFile extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "大小")
     private String size;
 
-    @NotNull
-    @ApiModelProperty(value = "是否启用")
+    @ApiModelProperty(value = "是否有效")
     private Boolean enabled;
 
-    public TrExamDepartFile(Long departId, String realName, String name, String fileDesc,
-                            String suffix, String path, String type, String size, Boolean enabled) {
+    public TrainMaterialFile(Long departId, String author, String version, Boolean isInternal, String toolType, String realName, String name, String fileDesc,
+                             String suffix, String path, String type, String size, Boolean enabled) {
         this.departId = departId;
+        this.author = author;
+        this.version = version;
+        this.isInternal = isInternal;
+        this.toolType = toolType;
         this.realName = realName;
         this.name = name;
         this.fileDesc = fileDesc;
@@ -88,7 +106,7 @@ public class TrExamDepartFile extends BaseEntity implements Serializable {
         this.enabled = enabled;
     }
 
-    public void copy(TrExamDepartFile source) {
+    public void copy(TrainMaterialFile source) {
         BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(true));
     }
 }

@@ -31,6 +31,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -45,20 +47,27 @@ public class TrExamDepartFileController {
 
     private final TrExamDepartFileService fileService;
 
+    @ApiOperation("导出认证证书数据")
+    @GetMapping(value = "/download")
+    @PreAuthorize("@el.check('train:list')")
+    public void download(HttpServletResponse response, TrExamDepartFileQueryCriteria criteria) throws IOException {
+        fileService.download(fileService.queryAll(criteria), response);
+    }
+
     @ApiOperation("查询部门考试题库")
     @GetMapping
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> query(TrExamDepartFileQueryCriteria criteria, Pageable pageable) {
-        return new ResponseEntity<>(fileService.query(criteria,pageable), HttpStatus.OK);
+        return new ResponseEntity<>(fileService.query(criteria, pageable), HttpStatus.OK);
     }
 
     @Log("上传部门考试题库")
     @ApiOperation("上传部门考试题库")
     @PostMapping
     @PreAuthorize("@el.check('exam:edit')")
-    public ResponseEntity<Object> uploadFile(@RequestParam("departId") Long departId, @RequestParam("name") String name,
-                                             @RequestParam("fileDesc") String fileDesc,@RequestParam("file") MultipartFile file) {
-        fileService.uploadFile(departId,name,fileDesc, file);
+    public ResponseEntity<Object> uploadFile(@RequestParam("departId") Long departId, @RequestParam("name") String name, @RequestParam("enabled") Boolean enabled,
+                                             @RequestParam("fileDesc") String fileDesc, @RequestParam("file") MultipartFile file) {
+        fileService.uploadFile(departId, name, enabled, fileDesc, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

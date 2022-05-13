@@ -1,10 +1,13 @@
 package me.zhengjie.service;
 
 import me.zhengjie.domain.TrExamDepartFile;
+import me.zhengjie.service.dto.TrExamDepartFileDto;
 import me.zhengjie.service.dto.TrExamDepartFileQueryCriteria;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,10 +24,11 @@ public interface TrExamDepartFileService {
      *
      * @param departId 培训关联部门ID
      * @param name     试卷名称
+     * @param enabled  是否有效
      * @param fileDesc 试卷描述
      * @param file     文件信息
      */
-    void uploadFile(Long departId, String name, String fileDesc, MultipartFile file);
+    void uploadFile(Long departId, String name, Boolean enabled, String fileDesc, MultipartFile file);
 
     /**
      * 根据培训关联部门ID查询题库
@@ -46,4 +50,14 @@ public interface TrExamDepartFileService {
      * @param resources 文件信息
      */
     void update(TrExamDepartFile resources);
+
+    /**
+     * 查询全部数据
+     *
+     * @param criteria /
+     * @return /
+     */
+    List<TrExamDepartFileDto> queryAll(TrExamDepartFileQueryCriteria criteria);
+
+    void download(List<TrExamDepartFileDto> queryAll, HttpServletResponse response) throws IOException;
 }
