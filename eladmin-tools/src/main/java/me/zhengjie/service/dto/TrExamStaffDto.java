@@ -21,6 +21,7 @@ import me.zhengjie.base.BaseDTO;
 import me.zhengjie.domain.TrExamStaffTranscript;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,8 @@ public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private Long departId;
 
+    private String departName;
+
     private String superior;
 
     private String jobName;
@@ -46,5 +49,13 @@ public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private String jobType;
 
-    private List<TrExamStaffTranscriptDto> fileList = new ArrayList<>();
+    private Boolean isPassed = false;
+
+    private Integer lastScore;
+
+    private Timestamp lastExamDate;
+
+    private Timestamp nextExamDate;
+
+    private List<TrExamStaffTranscript> transcriptList = new ArrayList<>();
 }

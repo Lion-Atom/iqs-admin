@@ -73,9 +73,7 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
                     FileUtil.getSize(multipartFile.getSize()),
                     enabled
             );
-
             materialFileRepository.save(materialFile);
-
         } catch (Exception e) {
             FileUtil.del(file);
             throw e;

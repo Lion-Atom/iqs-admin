@@ -16,6 +16,10 @@
 
 package me.zhengjie.utils;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -88,7 +92,7 @@ public class DateUtil {
      * 日期 格式化
      *
      * @param localDateTime /
-     * @param patten /
+     * @param patten        /
      * @return /
      */
     public static String localDateTimeFormat(LocalDateTime localDateTime, String patten) {
@@ -99,8 +103,21 @@ public class DateUtil {
     /**
      * 日期 格式化
      *
+     * @param timeStr /
+     * @return /
+     */
+    public static Timestamp transToTimestamp(String timeStr) throws ParseException {
+        /*SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time = df.format(new Date());
+        return Timestamp.valueOf(time);*/
+        return new Timestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timeStr).getTime());
+    }
+
+    /**
+     * 日期 格式化
+     *
      * @param localDateTime /
-     * @param df /
+     * @param df            /
      * @return /
      */
     public static String localDateTimeFormat(LocalDateTime localDateTime, DateTimeFormatter df) {

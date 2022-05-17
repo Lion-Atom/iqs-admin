@@ -13,21 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.service.mapstruct;
+package me.zhengjie.service.dto;
 
-import me.zhengjie.base.BaseMapper;
-import me.zhengjie.domain.TrExamStaffTranscript;
-import me.zhengjie.domain.TrainExamStaff;
-import me.zhengjie.service.dto.TrExamStaffDto;
-import me.zhengjie.service.dto.TrExamStaffTranscriptDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import me.zhengjie.annotation.Query;
+
+import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- * @author TongMinjie
- * @date 2022-05-11
- */
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface TrExamStaffTranscriptMapper extends BaseMapper<TrExamStaffTranscriptDto, TrExamStaffTranscript> {
+* @author TongMin Jie
+* @date 2022-5-16
+*/
+@Data
+@NoArgsConstructor
+public class TrainExamStaffQueryCriteria {
 
+    @Query(blurry = "staffName")
+    private String blurry;
+
+    @Query(propName = "departId", type = Query.Type.EQUAL)
+    private Long departId;
+
+    @Query(type = Query.Type.BETWEEN)
+    private List<Timestamp> createTime;
 }
