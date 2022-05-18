@@ -25,14 +25,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
-* @author TongMin Jie
-* @date 2022-5-16
-*/
+ * @author TongMin Jie
+ * @date 2022-5-16
+ */
 @Data
 @NoArgsConstructor
 public class TrainExamStaffQueryCriteria {
 
-    @Query(blurry = "staffName")
+    @Query(blurry = "staffName,jobName,jobType,workshop")
     private String blurry;
 
     @Query(propName = "departId", type = Query.Type.EQUAL)

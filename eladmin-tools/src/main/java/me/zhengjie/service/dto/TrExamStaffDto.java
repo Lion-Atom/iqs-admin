@@ -55,7 +55,11 @@ public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private Timestamp lastExamDate;
 
+    private String lastExamContent;
+
     private Timestamp nextExamDate;
+
+    private String lastExamDesc;
 
     private List<TrExamStaffTranscript> transcriptList = new ArrayList<>();
 }

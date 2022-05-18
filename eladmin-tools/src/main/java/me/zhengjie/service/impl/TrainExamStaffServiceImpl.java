@@ -48,14 +48,14 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
             list = staffMapper.toDto(staffs);
             list.forEach(staff -> {
                 deptIds.add(staff.getDepartId());
-                initStffTranscript(staff);
+                initStaffTranscript(staff);
             });
             initStaffDepartName(list, deptIds, deptMap);
         }
         return list;
     }
 
-    private void initStffTranscript(TrExamStaffDto staff) {
+    private void initStaffTranscript(TrExamStaffDto staff) {
         List<TrExamStaffTranscript> transcripts = transcriptRepository.findByTrExamStaffId(staff.getId());
         TrExamStaffTranscript lastTrans = transcriptRepository.findByTrExamStaffIdOrderByResitSort(staff.getId());
         if (ValidationUtil.isNotEmpty(transcripts)) {
@@ -63,7 +63,9 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
             staff.setIsPassed(lastTrans.getExamPassed());
             staff.setLastExamDate(lastTrans.getExamDate());
             staff.setLastScore(lastTrans.getExamScore());
+            staff.setLastExamContent(lastTrans.getExamContent());
             staff.setNextExamDate(lastTrans.getNextDate());
+            staff.setLastExamDesc(lastTrans.getExamDesc());
         }
     }
 
@@ -92,9 +94,11 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
             map.put("岗位", dto.getJobName());
             map.put("车间", dto.getWorkshop());
             map.put("考试日期", dto.getLastExamDate());
+            map.put("考试内容", dto.getLastExamContent());
             map.put("考试分数", dto.getLastScore());
-            map.put("是否通过", dto.getIsPassed() ? "通过" : "未通过");
+            map.put("考试结果", dto.getIsPassed() ? "通过" : "未通过");
             map.put("下次考试日期", dto.getNextExamDate());
+            map.put("备注", dto.getLastExamDesc());
             map.put("创建日期", dto.getCreateTime());
             list.add(map);
         }
@@ -110,7 +114,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             list = staffMapper.toDto(page.getContent());
             // 根据试卷信息返回考试结果等信息
-            list.forEach(this::initStffTranscript);
+            list.forEach(this::initStaffTranscript);
             total = page.getTotalElements();
         }
         map.put("content", list);

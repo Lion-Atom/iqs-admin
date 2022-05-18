@@ -52,10 +52,12 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
             TrExamStaffTranscript transcript = new TrExamStaffTranscript(
                     trExamStaffId,
                     examContent,
+                    // string转timestamp
                     examDate != null ? DateUtil.transToTimestamp(examDate) : null,
                     examScore,
                     examPassed,
                     examType,
+                    // string转timestamp
                     nextDate != null ? DateUtil.transToTimestamp(nextDate) : null,
                     resitSort,
                     examDesc,
