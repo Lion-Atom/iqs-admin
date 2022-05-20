@@ -1,6 +1,7 @@
 package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.TrainSchedule;
 import me.zhengjie.repository.TrScheduleFileRepository;
 import me.zhengjie.repository.TrainScheduleRepository;
@@ -88,6 +89,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     @Transactional(rollbackFor = Exception.class)
     public void update(TrainSchedule resource) {
         initScheduleInfo(resource);
+        judgeScheduleStatus(resource);
         scheduleRepository.save(resource);
     }
 
@@ -96,6 +98,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     public void create(TrainScheduleDto resource) {
         TrainSchedule schedule = scheduleMapper.toEntity(resource);
         initScheduleInfo(schedule);
+        judgeScheduleStatus(schedule);
         TrainSchedule newSchedule = scheduleRepository.save(schedule);
         // 文件列表
         if (ValidationUtil.isNotEmpty(resource.getFileList())) {
@@ -103,6 +106,19 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
                 file.setTrScheduleId(newSchedule.getId());
             });
             fileRepository.saveAll(resource.getFileList());
+        }
+    }
+
+    private void judgeScheduleStatus(TrainSchedule resource) {
+        long current = System.currentTimeMillis();//当前时间毫秒数
+        long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
+        long time = resource.getIsDelay() ? resource.getNewTrainTime().getTime() : resource.getTrainTime().getTime();
+        int diff = (int) ((time - zero)/ (24 * 60 * 60 * 1000));
+        // 下次校准时间超出，判定为超时未校准
+        if (diff <= 0) {
+            resource.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_CLOSED);
+        }  else {
+            resource.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_OPENED);
         }
     }
 

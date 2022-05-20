@@ -24,6 +24,7 @@ import me.zhengjie.modules.quartz.repository.QuartzLogRepository;
 import me.zhengjie.modules.system.domain.User;
 import me.zhengjie.modules.system.repository.UserRepository;
 import me.zhengjie.repository.*;
+import me.zhengjie.rest.TrCertificationController;
 import me.zhengjie.service.EmailService;
 import me.zhengjie.utils.CommonUtils;
 import me.zhengjie.utils.ValidationUtil;
@@ -58,6 +59,9 @@ public class TestTask {
     private final AuditPlanReportRepository reportRepository;
     private final InstruCaliRepository caliRepository;
     private final InstruCaliFileRepository fileRepository;
+    private final TrainCertificationRepository trainCertRepository;
+    private final TrainScheduleRepository trainScheduleRepository;
+    private final TrainTipRepository trainTipRepository;
 
     public void run() {
         log.info("run 执行成功");
@@ -201,7 +205,7 @@ public class TestTask {
                 long time = cali.getNextCaliDate().getTime() - cali.getRemindDays() * 24 * 3600 * 1000;
                 long now = new Date().getTime();
                 if (time <= now) {
-                    cali.setInstruName(cali.getInnerId()+"-"+cali.getInstruName());
+                    cali.setInstruName(cali.getInnerId() + "-" + cali.getInstruName());
                     EmailVo emailVo = new EmailVo();
                     emailVo.setIsAdminSend(true);
                     emailVo.setContent("提醒！！！【" + cali.getInstruName() + "】仪器校准已提上日程，请尽快处理！");
@@ -221,17 +225,17 @@ public class TestTask {
     }
 
     /**
-     * 走查仪器校准提前邮件提醒
+     * 走查仪器校准状态
      */
     @Transactional(rollbackFor = Exception.class)
-    public void checkIsOverDue() {
+    public void checkInsCaliIsOverDue() {
         List<InstruCali> calis = caliRepository.findByIsNotDroped();
         if (ValidationUtil.isNotEmpty(calis)) {
             calis.forEach(cali -> {
                 long time = cali.getNextCaliDate().getTime();
                 // now时间定义为今天的前一毫秒
-                long current=System.currentTimeMillis();//当前时间毫秒数
-                long zero=current/(1000*3600*24)*(1000*3600*24)- TimeZone.getDefault().getRawOffset();
+                long current = System.currentTimeMillis();//当前时间毫秒数
+                long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
                 // 下次校准时间超出，判定为超时未校准
                 if (time < zero) {
                     cali.setStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
@@ -240,6 +244,117 @@ public class TestTask {
                 }
             });
         }
+    }
+
+    /**
+     * 走查培训认证证书生效状态
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void checkTrCertificationIsOverDue() {
+        List<TrainCertification> certs = trainCertRepository.findAll();
+        if (ValidationUtil.isNotEmpty(certs)) {
+            certs.forEach(cert -> {
+                long time = cert.getDueDate().getTime();
+                // now时间定义为今天的前一毫秒
+                long current = System.currentTimeMillis();//当前时间毫秒数
+                long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
+                int diff = (int) ((time - zero) / (24 * 60 * 60 * 1000));
+                // 下次校准时间超出，判定为超时未校准
+                if (diff < 1) {
+                    cert.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_OVERDUE);
+                } else if (diff <= 30) {
+                    cert.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_SOON_TO_EXPIRE);
+                } else {
+                    cert.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_VALID);
+                }
+                trainCertRepository.save(cert);
+            });
+        }
+    }
+
+    /**
+     * 走查培训安排开放关闭状态
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void checkTrScheduleIsOpened() {
+        List<TrainSchedule> schedules = trainScheduleRepository.findAll();
+        if (ValidationUtil.isNotEmpty(schedules)) {
+            schedules.forEach(schedule -> {
+                long time = 0L;
+                if(schedule.getIsDelay()) {
+                    time = schedule.getNewTrainTime().getTime();
+                } else {
+                    time = schedule.getTrainTime().getTime();
+                }
+                // now时间定义为今天的前一毫秒
+                long current = System.currentTimeMillis();//当前时间毫秒数
+                long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
+                int diff = (int) ((time - zero) / (24 * 60 * 60 * 1000));
+                // 下次校准时间超出，判定为超时未校准
+                if (diff < 1) {
+                    schedule.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_CLOSED);
+                } else {
+                    schedule.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_OPENED);
+                }
+                trainScheduleRepository.save(schedule);
+            });
+        }
+    }
+
+    /**
+     * 走查培训记录是否到了提前提醒日期
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void checkIsToTrain() {
+        checkTrScheduleIsOpened();
+        checkTrCertificationIsOverDue();
+        // 实时清空（更新）提醒栏目
+        trainTipRepository.deleteAll();
+        List<TrainTip> tips = new ArrayList<>();
+        // 走查任务到了设置日期就提醒
+        // 1.认证证书过期检测
+        List<TrainCertification> certs = trainCertRepository.findAllByIsRemind(true);
+        if (ValidationUtil.isNotEmpty(certs)) {
+            certs.forEach(cert -> {
+                // 监控需要提醒日期与今日相比，确定是否开启邮件通知
+                long now = new Date().getTime();
+                int remainDays = (int) ((cert.getDueDate().getTime() - now) / (24 * 60 * 60 * 1000));
+                if (remainDays <=  cert.getRemindDays()) {
+                    TrainTip certTip = new TrainTip();
+                    certTip.setBindingId(cert.getId());
+                    certTip.setTrainType(CommonConstants.TRAIN_TIP_TYPE_CERTIFICATION);
+                    certTip.setDeadline(cert.getDueDate());
+                    certTip.setRemainDays(remainDays);
+                    certTip.setStatus(cert.getCertificationStatus());
+                    tips.add(certTip);
+                }
+            });
+        }
+        // 2.培训安排到期提醒
+        List<TrainSchedule> schedules = trainScheduleRepository.findAllByIsRemind(true);
+        if (ValidationUtil.isNotEmpty(schedules)) {
+            schedules.forEach(schedule -> {
+                // 监控需要提醒日期与今日相比，确定是否开启邮件通知
+                long time = 0L;
+                long now = new Date().getTime();
+                if(schedule.getIsDelay()) {
+                    time = schedule.getNewTrainTime().getTime() - schedule.getRemindDays() * 24 * 3600 * 1000;
+                } else {
+                    time = schedule.getTrainTime().getTime() - schedule.getRemindDays() * 24 * 3600 * 1000;
+                }
+                int remainDays = (int) ((time-now) / (24 * 60 * 60 * 1000));
+                if (time <= now) {
+                    TrainTip scheduleTip = new TrainTip();
+                    scheduleTip.setBindingId(schedule.getId());
+                    scheduleTip.setTrainType(CommonConstants.TRAIN_TIP_TYPE_SCHEDULE);
+                    scheduleTip.setDeadline(schedule.getIsDelay()?schedule.getNewTrainTime():schedule.getTrainTime());
+                    scheduleTip.setRemainDays(remainDays);
+                    scheduleTip.setStatus(schedule.getScheduleStatus());
+                    tips.add(scheduleTip);
+                }
+            });
+        }
+        trainTipRepository.saveAll(tips);
     }
 
     /**

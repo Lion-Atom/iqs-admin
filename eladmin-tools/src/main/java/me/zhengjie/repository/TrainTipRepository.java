@@ -15,22 +15,21 @@
  */
 package me.zhengjie.repository;
 
-import me.zhengjie.domain.TrainNewStaff;
-import me.zhengjie.domain.TrainSchedule;
+import me.zhengjie.domain.CalibrationOrg;
+import me.zhengjie.domain.TrainTip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author Tong Minjie
- * @date 2022-05-18
+ * @date 2022-03-11
  */
 @Repository
-public interface TrainScheduleRepository extends JpaRepository<TrainSchedule, Long>, JpaSpecificationExecutor<TrainSchedule> {
+public interface TrainTipRepository extends JpaRepository<TrainTip, Long>, JpaSpecificationExecutor<TrainTip> {
 
     /**
      * 根据Id删除
@@ -39,10 +38,4 @@ public interface TrainScheduleRepository extends JpaRepository<TrainSchedule, Lo
      */
     void deleteAllByIdIn(Set<Long> ids);
 
-    /**
-     * @param b 是否需要提前提醒
-     * @return 需要提前提星星的培训日程安排信息
-     */
-    @Query(value = "select * from train_schedule where is_remind = ?1 ", nativeQuery = true)
-    List<TrainSchedule> findAllByIsRemind(boolean b);
 }

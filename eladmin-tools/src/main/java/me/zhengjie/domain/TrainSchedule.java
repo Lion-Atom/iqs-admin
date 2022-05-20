@@ -93,7 +93,7 @@ public class TrainSchedule extends BaseEntity implements Serializable {
     private Boolean isRemind;
 
     @ApiModelProperty(value = "提前提醒天数")
-    private String remindDays;
+    private Integer remindDays;
 
     @NotNull
     @ApiModelProperty(value = "是否延期")
@@ -104,5 +104,8 @@ public class TrainSchedule extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "延期原因描述")
     private String delayDesc;
+
+    @ApiModelProperty(value = "日程安排状态")
+    private String scheduleStatus;
 
 }

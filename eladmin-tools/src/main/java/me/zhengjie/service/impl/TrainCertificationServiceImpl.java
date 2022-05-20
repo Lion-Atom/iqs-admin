@@ -1,6 +1,7 @@
 package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainCertification;
 import me.zhengjie.domain.TrainCertification;
@@ -132,26 +133,44 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         if (entity.getIsRemind() == null || !entity.getIsRemind()) {
             resource.setRemindDays(null);
         }
+        judgeCerStatus(resource);
         certificationRepository.save(resource);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(TrainCertificationDto resource) {
-        TrainCertification trainCertification = certificationRepository.findAllByStaffName(resource.getStaffName());
+    public void create(TrainCertificationDto dto) {
+        TrainCertification trainCertification = certificationRepository.findAllByStaffName(dto.getStaffName());
         if (trainCertification != null) {
-            throw new EntityExistException(TrainCertification.class, "staffName", resource.getStaffName());
+            throw new EntityExistException(TrainCertification.class, "staffName", dto.getStaffName());
         }
-        if (resource.getIsRemind() == null || !resource.getIsRemind()) {
-            resource.setRemindDays(null);
+        if (dto.getIsRemind() == null || !dto.getIsRemind()) {
+            dto.setRemindDays(null);
         }
-        TrainCertification certification = certificationRepository.save(certificationMapper.toEntity(resource));
+        TrainCertification resource = certificationMapper.toEntity(dto);
+        judgeCerStatus(resource);
+        TrainCertification certification = certificationRepository.save(resource);
         // 文件列表
-        if (ValidationUtil.isNotEmpty(resource.getFileList())) {
-            resource.getFileList().forEach(file -> {
+        if (ValidationUtil.isNotEmpty(dto.getFileList())) {
+            dto.getFileList().forEach(file -> {
                 file.setTrCertificationId(certification.getId());
             });
-            fileRepository.saveAll(resource.getFileList());
+            fileRepository.saveAll(dto.getFileList());
+        }
+    }
+
+    private void judgeCerStatus(TrainCertification resource) {
+        long current = System.currentTimeMillis();//当前时间毫秒数
+        long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
+        long time = resource.getDueDate().getTime();
+        int diff = (int) ((time - zero)/ (24 * 60 * 60 * 1000));
+        // 下次校准时间超出，判定为超时未校准
+        if (diff <= 0) {
+            resource.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_OVERDUE);
+        } else if (diff <= 30) {
+            resource.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_SOON_TO_EXPIRE);
+        } else {
+            resource.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_VALID);
         }
     }
 

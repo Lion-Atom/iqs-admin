@@ -99,4 +99,7 @@ public class TrainCertification extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "培训结果")
     private String trainResult;
 
+    @ApiModelProperty(value = "认证状态")
+    private String certificationStatus;
+
 }

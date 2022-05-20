@@ -18,7 +18,7 @@ package me.zhengjie.service.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import me.zhengjie.base.BaseDTO;
-import me.zhengjie.domain.TrScheduleFile;
+import me.zhengjie.domain.TrCertificationFile;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -27,50 +27,24 @@ import java.util.List;
 
 /**
  * @author Tong Minjie
- * @date 2022-05-18
+ * @date 2022-05-20
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TrainScheduleDto extends BaseDTO implements Serializable {
+public class TrainTipDto extends BaseDTO implements Serializable {
 
     private Long id;
 
-    private String trainTitle;
+    private Long bindingId;
 
-    private Timestamp trainTime;
-
-    private String trainContent;
-
-    private Timestamp regDeadline;
-
-    private String trainLocation;
-
-    private Integer cost;
-
-    private String trainer;
-
-    private String trainIns;
-
-    private String department;
+    private String bindingName;
 
     private String trainType;
 
-    private Integer totalNum;
+    private Integer remainDays;
 
-    private Integer curNum;
+    private Timestamp deadline;
 
-    private Boolean isRemind;
-
-    private Integer remindDays;
-
-    private Boolean isDelay;
-
-    private Timestamp newTrainTime;
-
-    private String delayDesc;
-
-    private String scheduleStatus;
-
-    private List<TrScheduleFile> fileList = new ArrayList<>();
+    private String status;
 
 }

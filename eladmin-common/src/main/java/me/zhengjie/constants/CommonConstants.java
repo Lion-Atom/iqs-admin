@@ -761,4 +761,49 @@ public class CommonConstants {
      */
     public static final String EQUIP_ACCEPTANCE_OPERATIONAL_TEST = "运转测试";
 
+    /**
+     * 证书状态 - 生效中
+     */
+    public static final String CERTIFICATION_STATUS_VALID = "生效中";
+
+    /**
+     * 证书状态 - 即将过期
+     */
+    public static final String CERTIFICATION_STATUS_SOON_TO_EXPIRE = "即将过期";
+
+    /**
+     * 证书状态 - 已过期
+     */
+    public static final String CERTIFICATION_STATUS_OVERDUE = "已过期";
+
+    /**
+     * 培训提示类型-认证
+     */
+    public static final String TRAIN_TIP_TYPE_CERTIFICATION = "证书";
+
+    /**
+     * 培训提示类型-日程安排
+     */
+    public static final String TRAIN_TIP_TYPE_SCHEDULE = "日程安排";
+
+    /**
+     * 日程安排状态 - 开放中
+     */
+    public static final String SCHEDULE_STATUS_OPENED = "开放中";
+
+    /**
+     * 日程安排状态 - 已关闭
+     */
+    public static final String SCHEDULE_STATUS_CLOSED = "已关闭";
+
+    /**
+     * 员工认证类型
+     */
+    public static final List<String> STAFF_CER_TYPE_LIST = new ArrayList<>();
+
+    static {
+        STAFF_CER_TYPE_LIST.add("特殊工种证明");
+        STAFF_CER_TYPE_LIST.add("三方机构证明");
+    }
+
 }

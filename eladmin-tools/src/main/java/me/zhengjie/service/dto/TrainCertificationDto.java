@@ -70,5 +70,7 @@ public class TrainCertificationDto extends BaseDTO implements Serializable {
 
     private String trainResult;
 
+    private String certificationStatus;
+
     private List<TrCertificationFile> fileList = new ArrayList<>();
 }

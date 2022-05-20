@@ -53,4 +53,11 @@ public interface TrainCertificationRepository extends JpaRepository<TrainCertifi
      */
     @Query(value = "select * from train_certification where staff_name = ?1 ", nativeQuery = true)
     TrainCertification findAllByStaffName(String staffName);
+
+    /**
+     * @param b 是否需要提前提醒
+     * @return 需要提前提星星的培训认证证书信息
+     */
+    @Query(value = "select * from train_certification where is_remind = ?1 ", nativeQuery = true)
+    List<TrainCertification> findAllByIsRemind(Boolean b);
 }
