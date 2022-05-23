@@ -18,17 +18,27 @@ package me.zhengjie.modules.quartz.repository;
 import me.zhengjie.modules.quartz.domain.QuartzJob;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
 import java.util.List;
 
 /**
  * @author Zheng Jie
  * @date 2019-01-07
  */
-public interface QuartzJobRepository extends JpaRepository<QuartzJob,Long>, JpaSpecificationExecutor<QuartzJob> {
+public interface QuartzJobRepository extends JpaRepository<QuartzJob, Long>, JpaSpecificationExecutor<QuartzJob> {
 
     /**
      * 查询启用的任务
+     *
      * @return List
      */
     List<QuartzJob> findByIsPauseIsFalse();
+
+    /**
+     * @param methodName 方法名称
+     * @return 定时任务信息
+     */
+    @Query(value = "select * from sys_quartz_job where method_name = ?1", nativeQuery = true)
+    QuartzJob findByMethodName(String methodName);
 }

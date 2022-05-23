@@ -33,6 +33,9 @@ public class JobQueryCriteria {
     @Query
     private Boolean isSuccess;
 
+    @Query
+    private String methodName;
+
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> createTime;
 }

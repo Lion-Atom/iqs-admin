@@ -106,6 +106,15 @@ public class QuartzJobController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Log("执行指定定时任务")
+    @ApiOperation("执行指定定时任务")
+    @GetMapping(value = "/byMethodName")
+    @PreAuthorize("@el.check('train:list')")
+    public ResponseEntity<Object> execByMethodName(@RequestParam("methodName") String methodName){
+        quartzJobService.execution(quartzJobService.findByName(methodName));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @Log("执行定时任务")
     @ApiOperation("执行定时任务")
     @PutMapping(value = "/exec/{id}")

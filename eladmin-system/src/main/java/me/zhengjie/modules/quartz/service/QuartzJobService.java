@@ -119,4 +119,6 @@ public interface QuartzJobService {
      * @throws InterruptedException /
      */
     void executionSubJob(String[] tasks) throws InterruptedException;
+
+    QuartzJob findByName(String methodName);
 }
