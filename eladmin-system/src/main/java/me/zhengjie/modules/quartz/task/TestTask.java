@@ -338,12 +338,13 @@ public class TestTask {
                 long time = 0L;
                 long now = new Date().getTime();
                 if(schedule.getIsDelay()) {
-                    time = schedule.getNewTrainTime().getTime() - schedule.getRemindDays() * 24 * 3600 * 1000;
+                    time = schedule.getNewTrainTime().getTime();
                 } else {
-                    time = schedule.getTrainTime().getTime() - schedule.getRemindDays() * 24 * 3600 * 1000;
+                    time = schedule.getTrainTime().getTime();
                 }
                 int remainDays = (int) ((time-now) / (24 * 60 * 60 * 1000));
-                if (time <= now) {
+                // 剩余时间小于设置的时间则需要显示到提示列表中去
+                if (remainDays <= schedule.getRemindDays()) {
                     TrainTip scheduleTip = new TrainTip();
                     scheduleTip.setBindingId(schedule.getId());
                     scheduleTip.setTrainType(CommonConstants.TRAIN_TIP_TYPE_SCHEDULE);

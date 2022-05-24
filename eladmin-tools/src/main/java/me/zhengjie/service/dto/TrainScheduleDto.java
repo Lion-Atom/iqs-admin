@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import me.zhengjie.base.BaseDTO;
 import me.zhengjie.domain.TrScheduleFile;
+import me.zhengjie.domain.TrainParticipant;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -53,6 +54,8 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private String department;
 
+    private String[] departTags;
+
     private String trainType;
 
     private Integer totalNum;
@@ -73,4 +76,5 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private List<TrScheduleFile> fileList = new ArrayList<>();
 
+    private List<TrainParticipant> partList = new ArrayList<>();
 }

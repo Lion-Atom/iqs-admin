@@ -95,7 +95,6 @@ public class TrainScheduleController {
     @DeleteMapping
     @PreAuthorize("@el.check('schedule:del')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
-        // 验证是否被审核计划关联
         scheduleService.delete(ids);
         return new ResponseEntity<>(HttpStatus.OK);
     }

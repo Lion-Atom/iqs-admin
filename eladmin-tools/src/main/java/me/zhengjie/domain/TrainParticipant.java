@@ -24,22 +24,23 @@ import lombok.Setter;
 import me.zhengjie.base.BaseEntity;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
  * @author TongMinjie
- * @date 2022-05-18
+ * @date 2022-05-07
  */
 @Getter
 @Setter
 @Entity
-@Table(name = "train_schedule_file")
+@Table(name = "train_participant")
 @NoArgsConstructor
-public class TrScheduleFile extends BaseEntity implements Serializable {
+public class TrainParticipant extends BaseEntity implements Serializable {
 
     @Id
-    @Column(name = "tr_schedule_file_id")
+    @Column(name = "train_participant_id")
     @ApiModelProperty(value = "ID", hidden = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,39 +50,19 @@ public class TrScheduleFile extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "培训日程安排ID")
     private Long trScheduleId;
 
-    @ApiModelProperty(value = "文件类型")
-    private String fileType;
+    @NotBlank
+    @Column(name = "participant_depart")
+    @ApiModelProperty(value = "所属部门")
+    private String participantDepart;
 
-    @ApiModelProperty(value = "真实文件名")
-    private String realName;
+    @NotBlank
+    @Column(name = "participant_name")
+    @ApiModelProperty(value = "参与者姓名")
+    private String participantName;
 
-    @ApiModelProperty(value = "文件名")
-    private String name;
+    @NotNull
+    @Column(name = "is_valid")
+    @ApiModelProperty(value = "是否有效")
+    private Boolean isValid;
 
-    @ApiModelProperty(value = "后缀")
-    private String suffix;
-
-    @ApiModelProperty(value = "路径")
-    private String path;
-
-    @ApiModelProperty(value = "类型")
-    private String type;
-
-    @ApiModelProperty(value = "大小")
-    private String size;
-
-    public TrScheduleFile(Long trScheduleId, String fileType, String realName, String name, String suffix, String path, String type, String size) {
-        this.trScheduleId = trScheduleId;
-        this.fileType = fileType;
-        this.realName = realName;
-        this.name = name;
-        this.suffix = suffix;
-        this.path = path;
-        this.type = type;
-        this.size = size;
-    }
-
-    public void copy(TrScheduleFile source) {
-        BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(true));
-    }
 }
