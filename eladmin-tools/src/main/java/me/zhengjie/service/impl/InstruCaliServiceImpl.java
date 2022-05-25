@@ -3,11 +3,13 @@ package me.zhengjie.service.impl;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.CalibrationFile;
+import me.zhengjie.domain.CalibrationOrg;
 import me.zhengjie.domain.InstruCali;
 import me.zhengjie.domain.ToolsLog;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.exception.EntityIDExistException;
+import me.zhengjie.repository.CaliOrgRepository;
 import me.zhengjie.repository.InstruCaliFileRepository;
 import me.zhengjie.repository.InstruCaliRepository;
 import me.zhengjie.repository.ToolsLogRepository;
@@ -44,16 +46,42 @@ public class InstruCaliServiceImpl implements InstruCaliService {
     private final InstruCaliRepository caliRepository;
     private final InstruCaliFileRepository fileRepository;
     private final ToolsLogRepository toolsLogRepository;
+    private final CaliOrgRepository orgRepository;
 
     @Override
-    public List<InstruCali> queryAll(InstruCaliQueryCriteria criteria) {
-        return caliRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+    public List<InstruCaliDto> queryAll(InstruCaliQueryCriteria criteria) {
+        List<InstruCaliDto> list = new ArrayList<>();
+        List<InstruCali> caliList = caliRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder));
+        if (ValidationUtil.isNotEmpty(caliList)) {
+            list = caliMapper.toDto(caliList);
+            Map<Long, String> orgMap = new HashMap<>();
+            Set<Long> orgIds = new HashSet<>();
+            list.forEach(dto -> {
+                if (dto.getCaliOrgId() != null) {
+                    orgIds.add(dto.getCaliOrgId());
+                }
+            });
+            List<CalibrationOrg> orgs = orgRepository.findByIdsIn(orgIds);
+            if (ValidationUtil.isNotEmpty(orgs)) {
+                orgs.forEach(org -> {
+                    if (!orgMap.containsKey(org.getId())) {
+                        orgMap.put(org.getId(), org.getCaliOrgName());
+                    }
+                });
+            }
+            list.forEach(dto -> {
+                if (dto.getCaliOrgId() != null) {
+                    dto.setCaliOrgName(orgMap.get(dto.getCaliOrgId()));
+                }
+            });
+        }
+        return list;
     }
 
     @Override
-    public void download(List<InstruCali> queryAll, HttpServletResponse response) throws IOException {
+    public void download(List<InstruCaliDto> queryAll, HttpServletResponse response) throws IOException {
         List<Map<String, Object>> list = new ArrayList<>();
-        for (InstruCali dto : queryAll) {
+        for (InstruCaliDto dto : queryAll) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("仪器名称", dto.getInstruName());
             map.put("出厂型号", dto.getInstruNum());
@@ -71,7 +99,7 @@ public class InstruCaliServiceImpl implements InstruCaliService {
             if (!dto.getInnerChecked()) {
                 map.put("外部校准", dto.getIsDoor() ? "上门校准" : "送出校准");
             } else {
-                map.put("外部校准", "--");
+                map.put("外部校准", dto.getCaliOrgName());
             }
             map.put("创建日期", dto.getCreateTime());
             map.put("是否报废", dto.getIsDroped() ? "是" : "否");
@@ -128,6 +156,11 @@ public class InstruCaliServiceImpl implements InstruCaliService {
         InstruCaliDto dto = caliMapper.toDto(cali);
         List<CalibrationFile> files = fileRepository.findByCaliId(id);
         dto.setFileList(files);
+        if (dto.getCaliOrgId() != null) {
+            CalibrationOrg org = orgRepository.findById(dto.getCaliOrgId()).orElseGet(CalibrationOrg::new);
+            ValidationUtil.isNull(CalibrationOrg.class, "CalibrationOrg", "id", org.getId());
+            dto.setCaliOrgName(org.getCaliOrgName());
+        }
         return dto;
     }
 
@@ -159,19 +192,19 @@ public class InstruCaliServiceImpl implements InstruCaliService {
         if (resource.getStatus().equals(CommonConstants.INSTRU_CALI_STATUS_UPLOAD)) {
             fileRepository.updateToOld(resource.getId());
         } else {
-            long current=System.currentTimeMillis();//当前时间毫秒数
-            long zero=current/(1000*3600*24)*(1000*3600*24)- TimeZone.getDefault().getRawOffset()-1;
+            long current = System.currentTimeMillis();//当前时间毫秒数
+            long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset() - 1;
             Set<Long> caliIds = new HashSet<>();
             caliIds.add(resource.getId());
             List<CalibrationFile> files = fileRepository.findByCaliIdInAndIsLatest(caliIds, true);
             if (ValidationUtil.isNotEmpty(files)) {
-                if(resource.getNextCaliDate().getTime() > zero) {
+                if (resource.getNextCaliDate().getTime() > zero) {
                     resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_FINISHED);
                 } else {
                     resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
                 }
             } else {
-                if(resource.getNextCaliDate().getTime() > zero) {
+                if (resource.getNextCaliDate().getTime() > zero) {
                     resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_UPLOAD);
                 } else {
                     resource.setStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);

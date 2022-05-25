@@ -784,7 +784,7 @@ public class CommonConstants {
     /**
      * 培训提示类型-日程安排
      */
-    public static final String TRAIN_TIP_TYPE_SCHEDULE = "日程安排";
+    public static final String TRAIN_TIP_TYPE_SCHEDULE = "培训计划";
 
     /**
      * 日程安排状态 - 开放中

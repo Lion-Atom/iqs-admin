@@ -45,6 +45,10 @@ public class InstruCaliDto extends BaseDTO implements Serializable {
 
     private String innerId;
 
+    private String position;
+
+    private String keeper;
+
     private Integer caliPeriod;
 
     private String periodUnit;
@@ -54,6 +58,10 @@ public class InstruCaliDto extends BaseDTO implements Serializable {
     private Timestamp nextCaliDate;
 
     private Boolean innerChecked;
+
+    private Long caliOrgId;
+
+    private String caliOrgName;
 
     private Boolean isDoor;
 

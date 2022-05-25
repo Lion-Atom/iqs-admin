@@ -57,7 +57,6 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     @Transactional(rollbackFor = Exception.class)
     public void update(TrainParticipant resource) {
         // todo 是否设置权限
-
         TrainParticipant old = trParticipantRepository.findById(resource.getId()).orElseGet(TrainParticipant::new);
         TrainSchedule schedule = trScheduleRepository.findById(resource.getTrScheduleId()).orElseGet(TrainSchedule::new);
         ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", resource.getTrScheduleId());
@@ -83,6 +82,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
+        // todo 关联查询操作，判断是否影响参与者数据
         trParticipantRepository.deleteAllByIdIn(ids);
     }
 }

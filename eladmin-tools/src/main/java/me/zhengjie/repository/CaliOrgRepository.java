@@ -21,6 +21,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,4 +40,7 @@ public interface CaliOrgRepository extends JpaRepository<CalibrationOrg, Long>, 
 
     @Query(value = "SELECT * FROM tools_calibration_org where cali_org_name = ?1", nativeQuery = true)
     CalibrationOrg findByName(String caliOrgName);
+
+    @Query(value = "SELECT * FROM tools_calibration_org where cali_org_id in ?1", nativeQuery = true)
+    List<CalibrationOrg> findByIdsIn(Set<Long> orgIds);
 }

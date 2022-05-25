@@ -50,21 +50,21 @@ public class TrainScheduleController {
 
     @ApiOperation("导出培训日程安排数据")
     @GetMapping(value = "/download")
-    @PreAuthorize("@el.check('train:list')")
+    @PreAuthorize("@el.check('schedule:list')")
     public void download(HttpServletResponse response, TrainScheduleQueryCriteria criteria) throws IOException {
         scheduleService.download(scheduleService.queryAll(criteria), response);
     }
 
     @ApiOperation("查询培训日程安排信息")
     @GetMapping
-    @PreAuthorize("@el.check('train:list')")
+    @PreAuthorize("@el.check('schedule:list')")
     public ResponseEntity<Object> query(TrainScheduleQueryCriteria criteria, Pageable pageable) {
         return new ResponseEntity<>(scheduleService.queryAll(criteria, pageable), HttpStatus.OK);
     }
 
     @ApiOperation("查询单条培训日程安排信息")
     @GetMapping(value = "/byId")
-    @PreAuthorize("@el.check('train:list')")
+    @PreAuthorize("@el.check('schedule:list')")
     public ResponseEntity<Object> getById(@RequestParam("id") Long id) {
         return new ResponseEntity<>(scheduleService.findById(id), HttpStatus.OK);
     }

@@ -24,7 +24,7 @@ public interface InstruCaliService {
      * @param criteria /
      * @return /
      */
-    List<InstruCali> queryAll(InstruCaliQueryCriteria criteria);
+    List<InstruCaliDto> queryAll(InstruCaliQueryCriteria criteria);
 
     /**
      * 导出数据
@@ -33,7 +33,7 @@ public interface InstruCaliService {
      * @param response /
      * @throws IOException /
      */
-    void download(List<InstruCali> queryAll, HttpServletResponse response) throws IOException;
+    void download(List<InstruCaliDto> queryAll, HttpServletResponse response) throws IOException;
 
     /**
      * 分页查询

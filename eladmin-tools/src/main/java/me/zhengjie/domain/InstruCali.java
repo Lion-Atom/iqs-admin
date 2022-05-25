@@ -80,6 +80,9 @@ public class InstruCali extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "是否是内部校准")
     private Boolean innerChecked;
 
+    @ApiModelProperty(value = "校准机构ID")
+    private Long caliOrgId;
+
     @ApiModelProperty(value = "是否是上门校准")
     private Boolean isDoor;
 
@@ -102,6 +105,14 @@ public class InstruCali extends BaseEntity implements Serializable {
     @NotBlank
     @ApiModelProperty(value = "使用人")
     private String useBy;
+
+    @NotBlank
+    @ApiModelProperty(value = "存放位置")
+    private String position;
+
+    @NotBlank
+    @ApiModelProperty(value = "保管人")
+    private String keeper;
 
     @NotNull
     @ApiModelProperty(value = "是否作废")
