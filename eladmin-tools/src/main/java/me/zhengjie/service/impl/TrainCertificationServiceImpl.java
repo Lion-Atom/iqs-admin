@@ -161,9 +161,9 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
 
     private void judgeCerStatus(TrainCertification resource) {
         long current = System.currentTimeMillis();//当前时间毫秒数
-        long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
+        long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24);
         long time = resource.getDueDate().getTime();
-        int diff = (int) ((time - zero)/ (24 * 60 * 60 * 1000));
+        int diff = (int) Math.ceil((double) (time - zero) / (24 * 60 * 60 * 1000));
         // 下次校准时间超出，判定为超时未校准
         if (diff <= 0) {
             resource.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_OVERDUE);

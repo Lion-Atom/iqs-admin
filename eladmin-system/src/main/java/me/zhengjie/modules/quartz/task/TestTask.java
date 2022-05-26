@@ -204,7 +204,7 @@ public class TestTask {
             calis.forEach(cali -> {
                 // 监控需要提醒日期与今日相比，确定是否开启邮件通知
                 long time = cali.getNextCaliDate().getTime() - cali.getRemindDays() * 24 * 3600 * 1000;
-                long now = new Date().getTime();
+                long now = System.currentTimeMillis();
                 if (time <= now) {
                     cali.setInstruName(cali.getInnerId() + "-" + cali.getInstruName());
                     EmailVo emailVo = new EmailVo();
@@ -256,7 +256,6 @@ public class TestTask {
         if (ValidationUtil.isNotEmpty(certs)) {
             certs.forEach(cert -> {
                 long time = cert.getDueDate().getTime();
-                // now时间定义为今天的前一毫秒
                 long current = System.currentTimeMillis();//当前时间毫秒数
                 long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
                 int diff = (int) ((time - zero) / (24 * 60 * 60 * 1000));
@@ -315,10 +314,8 @@ public class TestTask {
                 }
                 // now时间定义为今天的前一毫秒
                 long current = System.currentTimeMillis();//当前时间毫秒数
-                long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
-                int diff = (int) ((time - zero) / (24 * 60 * 60 * 1000));
                 // 下次校准时间超出，判定为超时未校准
-                if (diff < 1) {
+                if (time < current) {
                     schedule.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_CLOSED);
                 } else {
                     schedule.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_OPENED);
@@ -344,8 +341,8 @@ public class TestTask {
         if (ValidationUtil.isNotEmpty(certs)) {
             certs.forEach(cert -> {
                 // 监控需要提醒日期与今日相比，确定是否开启邮件通知
-                long now = new Date().getTime();
-                int remainDays = (int) ((cert.getDueDate().getTime() - now) / (24 * 60 * 60 * 1000));
+                long now = System.currentTimeMillis();
+                int remainDays = (int) Math.ceil((double) (cert.getDueDate().getTime() - now) / (24 * 60 * 60 * 1000));
                 if (remainDays <= cert.getRemindDays()) {
                     TrainTip certTip = new TrainTip();
                     certTip.setBindingId(cert.getId());
@@ -363,13 +360,13 @@ public class TestTask {
             schedules.forEach(schedule -> {
                 // 监控需要提醒日期与今日相比，确定是否开启邮件通知
                 long time = 0L;
-                long now = new Date().getTime();
+                long now = System.currentTimeMillis();
                 if (schedule.getIsDelay()) {
                     time = schedule.getNewTrainTime().getTime();
                 } else {
                     time = schedule.getTrainTime().getTime();
                 }
-                int remainDays = (int) ((time - now) / (24 * 60 * 60 * 1000));
+                int remainDays = (int) Math.ceil((double) (time - now) / (24 * 60 * 60 * 1000));
                 // 剩余时间小于设置的时间则需要显示到提示列表中去
                 if (remainDays <= schedule.getRemindDays()) {
                     TrainTip scheduleTip = new TrainTip();
