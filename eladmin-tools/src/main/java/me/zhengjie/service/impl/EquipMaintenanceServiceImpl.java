@@ -74,7 +74,7 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
             map.put("保养日期", ValidationUtil.transToDate(dto.getMaintainDate()));
             map.put("保养人员", dto.getMaintainBy());
             map.put("保养时长", dto.getMaintainDuration());
-            map.put("保养结果", dto.getMaintainStatus());
+            map.put("保养结果", dto.getMaintainResult());
             map.put("确认人", dto.getConfirmBy());
             map.put("创建时间", dto.getCreateTime());
             list.add(map);
@@ -159,10 +159,19 @@ public class EquipMaintenanceServiceImpl implements EquipMaintenanceService {
             }
             long dueDate = equipment.getLastMaintainDate().getTime() + unit * equipment.getMaintainPeriod();
             equipment.setMaintainDueDate(new Timestamp(dueDate));
+            // 前一天的23:59:59
+            long current = System.currentTimeMillis();//当前时间毫秒数
+            long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24) - 1;
+            if (dueDate > zero) {
+                equipment.setMaintainStatus(CommonConstants.MAINTAIN_STATUS_VALID);
+            } else {
+                equipment.setMaintainStatus(CommonConstants.MAINTAIN_STATUS_OVERDUE);
+            }
             equipmentRepository.save(equipment);
         } else {
             equipment.setLastMaintainDate(null);
             equipment.setMaintainDueDate(null);
+            equipment.setMaintainStatus("已定级，未保养");
             equipmentRepository.save(equipment);
         }
     }

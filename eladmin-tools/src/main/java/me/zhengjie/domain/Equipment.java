@@ -110,8 +110,11 @@ public class Equipment extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "设备级别")
     private String equipLevel;
 
-    @ApiModelProperty(value = "设备状态")
-    private String status;
+    @ApiModelProperty(value = "验收状态")
+    private String acceptStatus;
+
+    @ApiModelProperty(value = "保养状态")
+    private String maintainStatus;
 
     @ApiModelProperty(value = "设备-电压")
     private String equipOltage;

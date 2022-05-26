@@ -74,7 +74,9 @@ public class EquipmentDto extends BaseDTO implements Serializable {
 
     private String equipLevel;
 
-    private String status;
+    private String acceptStatus;
+
+    private String maintainStatus;
 
     private String equipOltage;
 

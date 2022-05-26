@@ -49,7 +49,7 @@ public class EquipMaintenanceDto extends BaseDTO implements Serializable {
 
     private String confirmBy;
 
-    private String maintainStatus;
+    private String maintainResult;
 
     private String maintainDesc;
 

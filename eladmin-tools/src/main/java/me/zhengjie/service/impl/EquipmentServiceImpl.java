@@ -1,6 +1,7 @@
 package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.Equipment;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.repository.EquipmentRepository;
@@ -74,8 +75,10 @@ public class EquipmentServiceImpl implements EquipmentService {
             map.put("使用部门", dto.getUseDepartName());
             map.put("设备位置", dto.getUseArea());
             map.put("设备级别", dto.getEquipLevel());
-            map.put("设备状态", dto.getStatus());
+            map.put("设备状态", dto.getEquipStatus());
+            map.put("验收状态", dto.getAcceptStatus());
             map.put("保养级别", dto.getMaintainLevel());
+            map.put("保养状态", dto.getMaintainStatus());
             map.put("上次保养时间", dto.getLastMaintainDate());
             if (dto.getMaintainPeriod() != null && dto.getMaintainPeriodUnit() != null) {
                 map.put("保养周期", dto.getMaintainPeriod() + dto.getMaintainPeriodUnit());
@@ -141,8 +144,23 @@ public class EquipmentServiceImpl implements EquipmentService {
         if (resource.getIsRemind() == null || !resource.getIsRemind()) {
             resource.setRemindDays(null);
         }
-        if (resource.getLastMaintainDate() == null) {
+        if (resource.getMaintainLevel() == null) {
+            //保养等级未设置
+            resource.setMaintainStatus("未定级，未保养");
+        } else if (resource.getLastMaintainDate() == null) {
+            resource.setMaintainStatus("已定级，未保养");
+            resource.setRemindDays(null);
             resource.setMaintainDueDate(null);
+        } else if (resource.getMaintainDueDate() != null) {
+            long current = System.currentTimeMillis();//当前时间毫秒数
+            // 今日零点前一毫秒
+            long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24) - 1;
+            long time = resource.getMaintainDueDate().getTime();
+            if (time > zero) {
+                resource.setMaintainStatus(CommonConstants.MAINTAIN_STATUS_VALID);
+            } else {
+                resource.setMaintainStatus(CommonConstants.MAINTAIN_STATUS_OVERDUE);
+            }
         }
         equipmentRepository.save(resource);
     }
@@ -157,7 +175,8 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Equipment resource) {
         // todo 设备判重
-        resource.setStatus("待验收");
+        resource.setAcceptStatus("待验收");
+        resource.setMaintainStatus(null);
         equipmentRepository.save(resource);
     }
 

@@ -68,4 +68,11 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long>, Jpa
     @Query(value = "update tools_equipment set status = '待验收' where equipment_id in (" +
             " select equipment_id from equip_acceptance where acceptance_id in ?1 ) ", nativeQuery = true)
     void rollbackEquipStatus(Set<Long> ids);
+
+
+    /**
+     * @return 保养中的设备信息
+     */
+    @Query(value = "select * from tools_equipment where maintain_due_date is not null", nativeQuery = true)
+    List<Equipment> findByMaintainDueDateIsNotNull();
 }

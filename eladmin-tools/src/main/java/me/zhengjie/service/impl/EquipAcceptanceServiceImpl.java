@@ -157,8 +157,8 @@ public class EquipAcceptanceServiceImpl implements EquipAcceptanceService {
             throw new BadRequestException("该设备已存在验收信息，请勿重复添加！");
         }
         acceptanceRepository.save(resource);
-        if (!resource.getAcceptStatus().equals(equipment.getStatus())) {
-            equipment.setStatus(resource.getAcceptStatus());
+        if (!resource.getAcceptStatus().equals(equipment.getAcceptStatus())) {
+            equipment.setAcceptStatus(resource.getAcceptStatus());
         }
         List<EquipAcceptanceDetail> details = detailRepository.findByAcceptanceId(resource.getId());
         if (ValidationUtil.isEmpty(details)) {

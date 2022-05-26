@@ -797,6 +797,16 @@ public class CommonConstants {
     public static final String SCHEDULE_STATUS_CLOSED = "已关闭";
 
     /**
+     * 设备保养状态 - 已保养
+     */
+        public static final String MAINTAIN_STATUS_VALID = "已保养";
+
+    /**
+     * 设备保养状态 - 过期未保养
+     */
+    public static final String MAINTAIN_STATUS_OVERDUE = "超期未保养";
+
+    /**
      * 员工认证类型
      */
     public static final List<String> STAFF_CER_TYPE_LIST = new ArrayList<>();

@@ -62,6 +62,7 @@ public class TestTask {
     private final TrainCertificationRepository trainCertRepository;
     private final TrainScheduleRepository trainScheduleRepository;
     private final TrainTipRepository trainTipRepository;
+    private final EquipmentRepository equipRepository;
 
     public void run() {
         log.info("run 执行成功");
@@ -273,6 +274,32 @@ public class TestTask {
     }
 
     /**
+     * 走查设备保养状态
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void checkEquipMtIsOverdue() {
+        List<Equipment> list = equipRepository.findByMaintainDueDateIsNotNull();
+        List<Equipment> newList = new ArrayList<>();
+        if (ValidationUtil.isNotEmpty(list)) {
+            list.forEach(equip -> {
+                long current = System.currentTimeMillis();//当前时间毫秒数
+                // 今日零点前一毫秒
+                long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24) - 1;
+                long time = equip.getMaintainDueDate().getTime();
+                int diff = (int) (time - zero);
+                // 保养过期时间与当前时间对比，若是小于当前时间则认定为过期未保养
+                if (diff <= 0) {
+                    equip.setMaintainStatus(CommonConstants.MAINTAIN_STATUS_VALID);
+                } else {
+                    equip.setMaintainStatus(CommonConstants.MAINTAIN_STATUS_OVERDUE);
+                }
+                newList.add(equip);
+            });
+        }
+        equipRepository.saveAll(newList);
+    }
+
+    /**
      * 走查培训安排开放关闭状态
      */
     @Transactional(rollbackFor = Exception.class)
@@ -281,7 +308,7 @@ public class TestTask {
         if (ValidationUtil.isNotEmpty(schedules)) {
             schedules.forEach(schedule -> {
                 long time = 0L;
-                if(schedule.getIsDelay()) {
+                if (schedule.getIsDelay()) {
                     time = schedule.getNewTrainTime().getTime();
                 } else {
                     time = schedule.getTrainTime().getTime();
@@ -319,7 +346,7 @@ public class TestTask {
                 // 监控需要提醒日期与今日相比，确定是否开启邮件通知
                 long now = new Date().getTime();
                 int remainDays = (int) ((cert.getDueDate().getTime() - now) / (24 * 60 * 60 * 1000));
-                if (remainDays <=  cert.getRemindDays()) {
+                if (remainDays <= cert.getRemindDays()) {
                     TrainTip certTip = new TrainTip();
                     certTip.setBindingId(cert.getId());
                     certTip.setTrainType(CommonConstants.TRAIN_TIP_TYPE_CERTIFICATION);
@@ -337,18 +364,18 @@ public class TestTask {
                 // 监控需要提醒日期与今日相比，确定是否开启邮件通知
                 long time = 0L;
                 long now = new Date().getTime();
-                if(schedule.getIsDelay()) {
+                if (schedule.getIsDelay()) {
                     time = schedule.getNewTrainTime().getTime();
                 } else {
                     time = schedule.getTrainTime().getTime();
                 }
-                int remainDays = (int) ((time-now) / (24 * 60 * 60 * 1000));
+                int remainDays = (int) ((time - now) / (24 * 60 * 60 * 1000));
                 // 剩余时间小于设置的时间则需要显示到提示列表中去
                 if (remainDays <= schedule.getRemindDays()) {
                     TrainTip scheduleTip = new TrainTip();
                     scheduleTip.setBindingId(schedule.getId());
                     scheduleTip.setTrainType(CommonConstants.TRAIN_TIP_TYPE_SCHEDULE);
-                    scheduleTip.setDeadline(schedule.getIsDelay()?schedule.getNewTrainTime():schedule.getTrainTime());
+                    scheduleTip.setDeadline(schedule.getIsDelay() ? schedule.getNewTrainTime() : schedule.getTrainTime());
                     scheduleTip.setRemainDays(remainDays);
                     scheduleTip.setStatus(schedule.getScheduleStatus());
                     tips.add(scheduleTip);

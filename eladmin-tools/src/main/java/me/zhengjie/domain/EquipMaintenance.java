@@ -60,8 +60,8 @@ public class EquipMaintenance extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "确认人")
     private String confirmBy;
 
-    @ApiModelProperty(value = "保养状态")
-    private String maintainStatus;
+    @ApiModelProperty(value = "保养结果")
+    private String maintainResult;
 
     @ApiModelProperty(value = "保养描述")
     private String maintainDesc;
