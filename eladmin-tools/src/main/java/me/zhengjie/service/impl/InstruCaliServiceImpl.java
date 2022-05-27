@@ -97,9 +97,9 @@ public class InstruCaliServiceImpl implements InstruCaliService {
             map.put("下一次校准日期", ValidationUtil.transToDate(dto.getNextCaliDate()));
             map.put("内部校准", dto.getInnerChecked() ? "是" : "否");
             if (!dto.getInnerChecked()) {
-                map.put("外部校准", dto.getIsDoor() ? "上门校准" : "送出校准");
+                map.put("外部校准", dto.getIsDoor() ? "上门校准，校准机构：" + dto.getCaliOrgName() : "送出校准，校准机构：" + dto.getCaliOrgName());
             } else {
-                map.put("外部校准", dto.getCaliOrgName());
+                map.put("外部校准", "---");
             }
             map.put("创建日期", dto.getCreateTime());
             map.put("是否报废", dto.getIsDroped() ? "是" : "否");

@@ -1,6 +1,7 @@
 package me.zhengjie.service;
 
 import me.zhengjie.domain.CalibrationOrg;
+import me.zhengjie.service.dto.CaliOrgQueryByExample;
 import me.zhengjie.service.dto.CaliOrgQueryCriteria;
 import me.zhengjie.service.dto.CalibrationOrgDto;
 import org.springframework.data.domain.Pageable;
@@ -72,4 +73,11 @@ public interface CaliOrgService {
      * @param ids /
      */
     void delete(Set<Long> ids);
+
+
+    /**
+     * @param queryByExample 启用状态
+     * @return 校准机构信息
+     */
+    List<CalibrationOrg> queryByExample(CaliOrgQueryByExample queryByExample);
 }

@@ -22,6 +22,7 @@ import me.zhengjie.annotation.Log;
 import me.zhengjie.domain.CalibrationOrg;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.service.CaliOrgService;
+import me.zhengjie.service.dto.CaliOrgQueryByExample;
 import me.zhengjie.service.dto.CaliOrgQueryCriteria;
 import me.zhengjie.service.dto.CalibrationOrgDto;
 import me.zhengjie.utils.ValidationUtil;
@@ -62,6 +63,13 @@ public class CaliOrgController {
     public ResponseEntity<Object> query(CaliOrgQueryCriteria criteria, Pageable pageable) {
         return new ResponseEntity<>(caliOrgService.queryAll(criteria, pageable), HttpStatus.OK);
     }
+    @ApiOperation("条件查询校准机构信息")
+    @PostMapping(value = "/queryByExample")
+    @PreAuthorize("@el.check('equip:list')")
+    public ResponseEntity<Object> queryByExample(@RequestBody CaliOrgQueryByExample queryByExample) {
+        return new ResponseEntity<>(caliOrgService.queryByExample(queryByExample), HttpStatus.OK);
+    }
+
 
     @ApiOperation("查询单个仪校机构信息")
     @GetMapping(value = "/byId")

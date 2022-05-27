@@ -7,6 +7,7 @@ import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.CaliOrgFileRepository;
 import me.zhengjie.repository.CaliOrgRepository;
 import me.zhengjie.service.CaliOrgService;
+import me.zhengjie.service.dto.CaliOrgQueryByExample;
 import me.zhengjie.service.dto.CaliOrgQueryCriteria;
 import me.zhengjie.service.dto.CalibrationOrgDto;
 import me.zhengjie.service.mapstruct.CaliOrgMapper;
@@ -109,5 +110,10 @@ public class CaliOrgServiceImpl implements CaliOrgService {
         caliOrgRepository.deleteAllByIdIn(ids);
         // 删除校准机构相关文件
         fileRepository.deleteByCaliOrgIdIn(ids);
+    }
+
+    @Override
+    public List<CalibrationOrg> queryByExample(CaliOrgQueryByExample queryByExample) {
+        return caliOrgRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, queryByExample, criteriaBuilder));
     }
 }
