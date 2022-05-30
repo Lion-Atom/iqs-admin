@@ -201,7 +201,6 @@ public class CommonConstants {
     }
 
 
-
     /**
      * 内容为空
      */
@@ -717,6 +716,16 @@ public class CommonConstants {
     public static final String INSTRU_CALI_STATUS_FINISHED = "已完成";
 
     /**
+     * 仪器校准状态 - 待校准
+     */
+    public static final String INSTRU_CALI_STATUS_WAIT = "待校准";
+
+    /**
+     * 仪器校准状态 - 无需校准
+     */
+    public static final String INSTRU_CALI_STATUS_DROP = "无需校准";
+
+    /**
      * 仪器校准状态 - 已超期
      */
     public static final String INSTRU_CALI_STATUS_OVERDUE = "超时未校准";
@@ -799,7 +808,7 @@ public class CommonConstants {
     /**
      * 设备保养状态 - 已保养
      */
-        public static final String MAINTAIN_STATUS_VALID = "已保养";
+    public static final String MAINTAIN_STATUS_VALID = "已保养";
 
     /**
      * 设备保养状态 - 过期未保养
@@ -815,5 +824,10 @@ public class CommonConstants {
         STAFF_CER_TYPE_LIST.add("特殊工种证明");
         STAFF_CER_TYPE_LIST.add("三方机构证明");
     }
+
+    /**
+     * 仪器状态 - 报废
+     */
+    public static final String INSTRUMENT_STATUS_DROP = "报废";
 
 }
