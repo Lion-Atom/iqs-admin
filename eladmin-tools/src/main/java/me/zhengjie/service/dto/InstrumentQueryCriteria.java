@@ -23,18 +23,18 @@ import java.sql.Timestamp;
 import java.util.List;
 
 /**
-* @author TongMin Jie
-* @date 2022-05-27 14:11:34
-*/
+ * @author TongMin Jie
+ * @date 2022-05-27 14:11:34
+ */
 @Data
 @NoArgsConstructor
 public class InstrumentQueryCriteria {
 
-    @Query(blurry = "instruName,instruNum")
+    @Query(blurry = "instruName,instruNum,useArea,useBy,position,keeper")
     private String blurry;
 
-    @Query(blurry = "useArea,useBy")
-    private String useBlurry;
+//    @Query(blurry = "useArea,useBy")
+//    private String useBlurry;
 
     @Query
     private Boolean innerChecked;
