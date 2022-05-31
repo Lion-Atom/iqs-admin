@@ -22,7 +22,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class InstruCaliFileServiceImplV2 implements InstruCaliFileServiceV2 {
+public class InstruCaliFileServiceV2Impl implements InstruCaliFileServiceV2 {
 
     private final InstruCalibrationFileV2Repository fileRepository;
     private final FileProperties properties;

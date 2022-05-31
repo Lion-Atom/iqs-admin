@@ -28,7 +28,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class InstruCalibrationServiceImplV2 implements InstruCalibrationServiceV2 {
+public class InstruCalibrationServiceV2Impl implements InstruCalibrationServiceV2 {
 
     private final InstruCalibrationRepository caliRepository;
     private final InstruCalibrationFileV2Repository fileRepository;
