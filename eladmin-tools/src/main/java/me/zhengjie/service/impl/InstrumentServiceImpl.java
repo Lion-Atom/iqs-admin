@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.CalibrationOrg;
 import me.zhengjie.domain.InstruCali;
+import me.zhengjie.domain.InstruCalibration;
 import me.zhengjie.domain.Instrument;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.repository.CaliOrgRepository;
+import me.zhengjie.repository.InstruCalibrationRepository;
 import me.zhengjie.repository.InstruFileRepository;
 import me.zhengjie.repository.InstrumentRepository;
 import me.zhengjie.service.InstrumentService;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -38,6 +41,7 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final InstruFileRepository instruFileRepository;
     private final InstrumentMapper instruMapper;
     private final CaliOrgRepository orgRepository;
+    private final InstruCalibrationRepository caliRepository;
 
     @Override
     public List<InstrumentDto> queryAll(InstrumentQueryCriteria criteria) {
@@ -125,8 +129,9 @@ public class InstrumentServiceImpl implements InstrumentService {
 
     @Override
     public Instrument findById(Long id) {
-        // 未用到，因此暂不高兴实现
-        return null;
+        Instrument instru = instruRepository.findById(id).orElseGet(Instrument::new);
+        ValidationUtil.isNull(InstruCali.class, "Instrument", "id", instru.getId());
+        return instru;
     }
 
     @Override
@@ -178,17 +183,43 @@ public class InstrumentServiceImpl implements InstrumentService {
                 throw new BadRequestException("该资产号已存在，请核实后填入！");
             }
         }
+        InstruCalibration max = caliRepository.findMaxByInstruId(resource.getId());
         if (resource.getStatus().equals(CommonConstants.INSTRUMENT_STATUS_DROP)) {
             resource.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_DROP);
-        } else if (resource.getNextCaliDate() != null) {
+        } else if (max != null) {
+            long unit = (long) (24 * 3600 * 1000);
+            switch (resource.getPeriodUnit()) {
+                case CommonConstants.PERIOD_UNIT_YEAR:
+                    // 年度
+                    unit = 360 * unit;
+                    break;
+                case CommonConstants.PERIOD_UNIT_QUARTER:
+                    // 季度-3个月
+                    unit = 90 * unit;
+                    break;
+                case CommonConstants.PERIOD_UNIT_MONTH:
+                    // 月
+                    unit = 30 * unit;
+                    break;
+                case CommonConstants.PERIOD_UNIT_WEEK:
+                    // 周
+                    unit = 7 * unit;
+                    break;
+            }
+            resource.setLastCaliDate(max.getCaliDate());
+            long dueDate = resource.getLastCaliDate().getTime() + unit * resource.getCaliPeriod();
+            resource.setNextCaliDate(new Timestamp(dueDate));
             long current = System.currentTimeMillis();//当前时间毫秒数
             // 今日零点前一毫秒
-            long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24) - 1;
-            long time = resource.getNextCaliDate().getTime();
-            int diff = (int) (time - zero);
-            // 保养过期时间与当前时间对比，若是小于当前时间则认定为过期未保养
+            long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24);
+            int diff = (int) Math.ceil((double) (dueDate - zero) / (24 * 60 * 60 * 1000));
+            // 校准过期时间与当前时间对比，若是小于当前时间则认定为过期未保养
             if (diff > 0) {
-                resource.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_FINISHED);
+                if (resource.getRemindDays() != null && diff <= resource.getRemindDays()) {
+                    resource.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_SOON_OVERDUE);
+                } else {
+                    resource.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_FINISHED);
+                }
             } else {
                 resource.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
             }

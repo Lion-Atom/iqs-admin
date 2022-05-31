@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,4 +45,22 @@ public interface InstrumentRepository extends JpaRepository<Instrument, Long>, J
     @Modifying
     @Query(value = "delete FROM tools_instrument where instru_id in ?1", nativeQuery = true)
     void deleteAllByInstruIdIn(Set<Long> instruIds);
+
+    /**
+     * 批量查询仪器信息
+     *
+     * @param instruIds 仪器Ids
+     * @return 仪器信息列表
+     */
+    @Query(value = "select * FROM tools_instrument where instru_id in ?1", nativeQuery = true)
+    List<Instrument> findByIdIn(Set<Long> instruIds);
+
+    /**
+     * 查询非报废状态的仪器信息
+     *
+     * @param dropStatus 报废状态
+     * @return 非报废的仪器
+     */
+    @Query(value = "select * FROM tools_instrument where status <> ?1", nativeQuery = true)
+    List<Instrument> findByIsNotDroped(String dropStatus);
 }

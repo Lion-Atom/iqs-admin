@@ -63,6 +63,7 @@ public class TestTask {
     private final TrainScheduleRepository trainScheduleRepository;
     private final TrainTipRepository trainTipRepository;
     private final EquipmentRepository equipRepository;
+    private final InstrumentRepository instrumentRepository;
 
     public void run() {
         log.info("run 执行成功");
@@ -270,6 +271,38 @@ public class TestTask {
                 trainCertRepository.save(cert);
             });
         }
+    }
+
+    /**
+     * 走查仪器校准状态
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void checkInstruCaliIsOverdueV2() {
+        List<Instrument> list = instrumentRepository.findByIsNotDroped(CommonConstants.INSTRUMENT_STATUS_DROP);
+        List<Instrument> newList = new ArrayList<>();
+        if (ValidationUtil.isNotEmpty(list)) {
+            list.forEach(instrument -> {
+                if (instrument.getNextCaliDate() != null) {
+                    long current = System.currentTimeMillis();//当前时间毫秒数
+                    // 今日零点前一毫秒
+                    long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24);
+                    long dueDate = instrument.getNextCaliDate().getTime();
+                    int diff = (int) Math.ceil((double) (dueDate - zero) / (24 * 60 * 60 * 1000));
+                    // 校准过期时间与当前时间对比，若是小于当前时间则认定为过期未保养
+                    if (diff > 0) {
+                        if (instrument.getRemindDays() != null && diff <= instrument.getRemindDays()) {
+                            instrument.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_SOON_OVERDUE);
+                        } else {
+                            instrument.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_FINISHED);
+                        }
+                    } else {
+                        instrument.setCaliStatus(CommonConstants.INSTRU_CALI_STATUS_OVERDUE);
+                    }
+                    newList.add(instrument);
+                }
+            });
+        }
+        instrumentRepository.saveAll(newList);
     }
 
     /**

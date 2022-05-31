@@ -716,6 +716,11 @@ public class CommonConstants {
     public static final String INSTRU_CALI_STATUS_FINISHED = "已完成";
 
     /**
+     * 仪器校准状态 - 即将到期
+     */
+    public static final String INSTRU_CALI_STATUS_SOON_OVERDUE = "即将到期";
+
+    /**
      * 仪器校准状态 - 待校准
      */
     public static final String INSTRU_CALI_STATUS_WAIT = "待校准";

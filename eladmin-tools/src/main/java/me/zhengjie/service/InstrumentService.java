@@ -22,7 +22,7 @@ public interface InstrumentService {
 
     void download(List<InstrumentDto> queryAll, HttpServletResponse response) throws IOException;
 
-    Map<String,Object> queryByPage(InstrumentQueryCriteria criteria, Pageable pageable);
+    Map<String, Object> queryByPage(InstrumentQueryCriteria criteria, Pageable pageable);
 
     Instrument findById(Long id);
 
