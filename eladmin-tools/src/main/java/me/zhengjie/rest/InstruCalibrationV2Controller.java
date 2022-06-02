@@ -19,12 +19,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
-import me.zhengjie.domain.EquipMaintenance;
+import me.zhengjie.domain.InstruCalibration;
 import me.zhengjie.exception.BadRequestException;
-import me.zhengjie.service.EquipMaintenanceService;
 import me.zhengjie.service.InstruCalibrationServiceV2;
-import me.zhengjie.service.dto.EquipMaintainQueryCriteria;
-import me.zhengjie.service.dto.EquipMaintenanceDto;
 import me.zhengjie.service.dto.InstruCalibrationDto;
 import me.zhengjie.service.dto.InstruCalibrationQueryCriteria;
 import org.springframework.data.domain.Pageable;
@@ -95,7 +92,7 @@ public class InstruCalibrationV2Controller {
     @ApiOperation("修改仪器校准信息")
     @PutMapping
     @PreAuthorize("@el.check('instrument:edit')")
-    public ResponseEntity<Object> update(@Validated(EquipMaintenance.Update.class) @RequestBody InstruCalibrationDto resource) {
+    public ResponseEntity<Object> update(@Validated(InstruCalibration.Update.class) @RequestBody InstruCalibrationDto resource) {
         calibrationServiceV2.update(resource);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

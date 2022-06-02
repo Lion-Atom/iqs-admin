@@ -40,4 +40,11 @@ public interface TrParticipantService {
      * @param ids 培训日程安排参与者IDS
      */
     void delete(Set<Long> ids);
+
+    /**
+     * 批量保存参与信息
+     *
+     * @param resources 培训日程列表信息
+     */
+    void batchSave(List<TrainParticipant> resources);
 }

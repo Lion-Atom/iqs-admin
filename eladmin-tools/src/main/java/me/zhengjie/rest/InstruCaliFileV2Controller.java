@@ -43,7 +43,7 @@ public class InstruCaliFileV2Controller {
 
     @ApiOperation("查询仪器校准报告")
     @GetMapping(value = "/byCaliId")
-    @PreAuthorize("@el.check('maintain:list')")
+    @PreAuthorize("@el.check('instrument:edit')")
     public ResponseEntity<Object> getByCaliId(@RequestParam("caliId") Long caliId) {
         return new ResponseEntity<>(fileService.getByCaliId(caliId), HttpStatus.OK);
     }
@@ -51,7 +51,7 @@ public class InstruCaliFileV2Controller {
     @Log("上传设备保养相关附件")
     @ApiOperation("上传设备保养相关附件")
     @PostMapping
-    @PreAuthorize("@el.check('maintain:edit')")
+    @PreAuthorize("@el.check('instrument:edit')")
     public ResponseEntity<Object> uploadFile(@RequestParam("caliId") Long caliId, @RequestParam("file") MultipartFile file) {
         fileService.uploadFile(caliId, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -60,7 +60,7 @@ public class InstruCaliFileV2Controller {
     @Log("删除设备保养相关附件")
     @ApiOperation("删除设备保养相关附件")
     @DeleteMapping
-    @PreAuthorize("@el.check('maintain:edit')")
+    @PreAuthorize("@el.check('instrument:edit')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
         fileService.delete(ids);
         return new ResponseEntity<>(HttpStatus.OK);

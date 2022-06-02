@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,6 +46,20 @@ public class TrParticipantController {
             throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
         }
         trParticipantService.create(resource);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Log("新增培训日程安排参与者信息")
+    @ApiOperation("新增培训日程安排参与者信息")
+    @PostMapping("/batchSave")
+    @PreAuthorize("@el.check('schedule:edit')")
+    public ResponseEntity<Object> batchSave(@Validated @RequestBody List<TrainParticipant> resources) {
+        resources.forEach(part -> {
+            if (part.getId() != null) {
+                throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
+            }
+        });
+        trParticipantService.batchSave(resources);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
