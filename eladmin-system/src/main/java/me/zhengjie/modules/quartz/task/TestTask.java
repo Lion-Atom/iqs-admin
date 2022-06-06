@@ -256,10 +256,10 @@ public class TestTask {
         List<TrainCertification> certs = trainCertRepository.findAll();
         if (ValidationUtil.isNotEmpty(certs)) {
             certs.forEach(cert -> {
-                long time = cert.getDueDate().getTime();
                 long current = System.currentTimeMillis();//当前时间毫秒数
-                long zero = current / (1000 * 3600 * 24) * (1000 * 3600 * 24) - TimeZone.getDefault().getRawOffset();
-                int diff = (int) ((time - zero) / (24 * 60 * 60 * 1000));
+                long zero = current - (current + TimeZone.getDefault().getRawOffset()) % (1000 * 3600 * 24);
+                long time = cert.getDueDate().getTime();
+                int diff = (int) Math.ceil((double) (time - zero) / (24 * 60 * 60 * 1000));
                 // 下次校准时间超出，判定为超时未校准
                 if (diff < 1) {
                     cert.setCertificationStatus(CommonConstants.CERTIFICATION_STATUS_OVERDUE);

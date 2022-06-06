@@ -19,7 +19,9 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Getter;
 import lombok.Setter;
 import me.zhengjie.base.BaseDTO;
+
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
@@ -41,9 +43,23 @@ public class UserDto extends BaseDTO implements Serializable {
 
     private Long deptId;
 
+    private String deptName;
+
     private String username;
 
     private String nickName;
+
+    private String staffType;
+
+    private String jobType;
+
+    private Timestamp hireDate;
+
+    private String workshop;
+
+    private String team;
+
+    private String jobNum;
 
     private String email;
 
@@ -69,4 +85,6 @@ public class UserDto extends BaseDTO implements Serializable {
     private Boolean isDepartMaster;
 
     private Long superiorId;
+
+    private String superiorName;
 }

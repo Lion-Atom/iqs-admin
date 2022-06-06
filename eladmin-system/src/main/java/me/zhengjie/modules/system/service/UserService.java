@@ -102,7 +102,7 @@ public interface UserService {
      * @param pageable 分页参数
      * @return /
      */
-    Object queryAll(UserQueryCriteria criteria, Pageable pageable);
+    Map<String,Object> queryAll(UserQueryCriteria criteria, Pageable pageable);
 
     /**
      * 查询全部不分页

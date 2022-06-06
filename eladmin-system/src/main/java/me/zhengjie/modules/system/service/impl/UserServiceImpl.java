@@ -64,12 +64,44 @@ public class UserServiceImpl implements UserService {
     private final DeptRepository deptRepository;
 
     @Override
-    public Object queryAll(UserQueryCriteria criteria, Pageable pageable) {
+    public Map<String, Object> queryAll(UserQueryCriteria criteria, Pageable pageable) {
+        Map<String, Object> map = new HashMap<>();
+        List<UserDto> list = new ArrayList<>();
+        long total = 0L;
         if (criteria.getQueryAll()) {
             criteria.setDeptIds(null);
         }
         Page<User> page = userRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
-        return PageUtil.toPage(page.map(userMapper::toDto));
+        // 获取上级主管和部门信息
+        if (ValidationUtil.isNotEmpty(page.getContent())) {
+            list = userMapper.toDto(page.getContent());
+            Map<Long, String> nameMap = new HashMap<>();
+            Set<Long> idList = new HashSet<>();
+            list.forEach(user -> {
+                if (user.getDept() != null) {
+                    user.setDeptName(user.getDept().getName());
+                }
+                if (user.getSuperiorId() != null) {
+                    idList.add(user.getSuperiorId());
+                }
+            });
+            List<User> superiors = userRepository.findAllById(idList);
+            if (ValidationUtil.isNotEmpty(superiors)) {
+                superiors.forEach(superior -> {
+                    nameMap.put(superior.getId(), superior.getUsername());
+                });
+            }
+            list.forEach(user -> {
+                if (user.getSuperiorId() != null) {
+                    user.setSuperiorName(nameMap.get(user.getSuperiorId()));
+                }
+            });
+            total = page.getTotalElements();
+        }
+        //  PageUtil.toPage(page.map(userMapper::toDto))
+        map.put("content", list);
+        map.put("totalElements", total);
+        return map;
     }
 
     @Override
@@ -154,6 +186,12 @@ public class UserServiceImpl implements UserService {
         user.setJobs(resources.getJobs());
         user.setPhone(resources.getPhone());
         user.setNickName(resources.getNickName());
+        user.setHireDate(resources.getHireDate());
+        user.setStaffType(resources.getStaffType());
+        user.setJobType(resources.getJobType());
+        user.setJobNum(resources.getJobNum());
+        user.setWorkshop(resources.getWorkshop());
+        user.setTeam(resources.getTeam());
         user.setGender(resources.getGender());
         user.setSuperiorId(resources.getSuperiorId());
         user.setIsDepartMaster(resources.getIsDepartMaster());

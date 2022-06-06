@@ -24,6 +24,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
@@ -69,7 +70,6 @@ public class User extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "用户名称")
     private String username;
 
-
     @ApiModelProperty(value = "用户昵称")
     private String nickName;
 
@@ -84,6 +84,30 @@ public class User extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "用户性别")
     private String gender;
+
+    // ----新增属性信息start---
+
+    @NotBlank
+    @ApiModelProperty(value = "员工分类")
+    private String staffType;
+
+    @ApiModelProperty(value = "工种")
+    private String jobType;
+
+    @NotNull
+    @ApiModelProperty(value = "入职日期")
+    private Timestamp hireDate;
+
+    @ApiModelProperty(value = "车间")
+    private String workshop;
+
+    @ApiModelProperty(value = "班组")
+    private String team;
+
+    @ApiModelProperty(value = "工号")
+    private String jobNum;
+
+    // ----新增属性信息end---
 
     @ApiModelProperty(value = "头像真实名称",hidden = true)
     private String avatarName;

@@ -32,7 +32,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class TrainNewStaffQueryCriteria {
 
-    @Query(blurry = "staffName")
+    @Query(blurry = "staffName,jobNum")
     private String blurry;
 
     private Long departId;
