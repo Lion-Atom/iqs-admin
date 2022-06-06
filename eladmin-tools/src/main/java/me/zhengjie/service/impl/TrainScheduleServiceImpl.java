@@ -2,9 +2,11 @@ package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.constants.CommonConstants;
+import me.zhengjie.domain.ScheduleBindingDept;
 import me.zhengjie.domain.TrainParticipant;
 import me.zhengjie.domain.TrainSchedule;
 import me.zhengjie.exception.BadRequestException;
+import me.zhengjie.repository.ScheduleBindingDeptRepository;
 import me.zhengjie.repository.TrScheduleFileRepository;
 import me.zhengjie.repository.TrainParticipantRepository;
 import me.zhengjie.repository.TrainScheduleRepository;
@@ -35,6 +37,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private final TrScheduleFileRepository fileRepository;
     private final TrainScheduleMapper scheduleMapper;
     private final TrainParticipantRepository participantRepository;
+    private final ScheduleBindingDeptRepository bindingDeptRepository;
 
     @Override
     public List<TrainScheduleDto> queryAll(TrainScheduleQueryCriteria criteria) {
@@ -112,6 +115,21 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         scheduleRepository.save(resource);
     }
 
+    private void initScheduleBindDepts(TrainSchedule resource, Set<ScheduleBindingDept> bindDepts) {
+        if (ValidationUtil.isNotEmpty(Collections.singletonList(bindDepts))) {
+            List<ScheduleBindingDept> bindingDeptList = new ArrayList<>();
+            bindDepts.forEach(bindDeptId -> {
+                ScheduleBindingDept bind = new ScheduleBindingDept();
+                bind.setTrScheduleId(resource.getId());
+                bind.setDeptId(bindDeptId.getDeptId());
+                bindingDeptList.add(bind);
+            });
+            bindingDeptRepository.saveAll(bindingDeptList);
+            // 重新装载，防止数据丢失
+//            resource.getBindDepts().addAll(bindingDeptList);
+        }
+    }
+
     private void checkEditAuthorized(TrainSchedule schedule) {
         Boolean isAdmin = SecurityUtils.isAdmin();
         String username = SecurityUtils.getCurrentUsername();
@@ -128,6 +146,8 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         initScheduleInfo(schedule);
         judgeScheduleStatus(schedule);
         TrainSchedule newSchedule = scheduleRepository.save(schedule);
+        // 添加涉及部门
+//        initScheduleBindDepts(newSchedule, resource.getBindDepts());
         // 文件列表
         if (ValidationUtil.isNotEmpty(resource.getFileList())) {
             resource.getFileList().forEach(file -> {

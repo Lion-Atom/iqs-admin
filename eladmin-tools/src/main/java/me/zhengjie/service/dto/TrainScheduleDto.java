@@ -18,6 +18,7 @@ package me.zhengjie.service.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import me.zhengjie.base.BaseDTO;
+import me.zhengjie.domain.ScheduleDept;
 import me.zhengjie.domain.TrScheduleFile;
 import me.zhengjie.domain.TrainParticipant;
 
@@ -25,6 +26,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Tong Minjie
@@ -68,6 +70,8 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private Boolean isDelay;
 
+    private Boolean isExam;
+
     private Timestamp newTrainTime;
 
     private String delayDesc;
@@ -77,4 +81,6 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
     private List<TrScheduleFile> fileList = new ArrayList<>();
 
     private List<TrainParticipant> partList = new ArrayList<>();
+
+    private Set<ScheduleDept> bindDepts;
 }

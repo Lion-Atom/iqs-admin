@@ -25,6 +25,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Set;
 
 /**
  * @author Tong Minjie
@@ -107,5 +108,19 @@ public class TrainSchedule extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "日程安排状态")
     private String scheduleStatus;
+
+    @NotNull
+    @ApiModelProperty(value = "是否需要考试")
+    private Boolean isExam;
+
+    //    @JoinColumn(name = "train_schedule_id")
+//    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+//    private Set<ScheduleBindingDept> bindDepts;
+    @ManyToMany
+    @ApiModelProperty(value = "涉及部门")
+    @JoinTable(name = "tool_schedule_dept",
+            joinColumns = {@JoinColumn(name = "train_schedule_id", referencedColumnName = "train_schedule_id")},
+            inverseJoinColumns = {@JoinColumn(name = "dept_id", referencedColumnName = "dept_id")})
+    private Set<ScheduleDept> bindDepts;
 
 }
