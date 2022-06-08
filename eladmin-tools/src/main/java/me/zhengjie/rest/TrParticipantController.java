@@ -45,8 +45,8 @@ public class TrParticipantController {
         return new ResponseEntity<>(trParticipantService.getByExample(example), HttpStatus.OK);
     }
 
-    @Log("新增培训日程安排参与者信息")
-    @ApiOperation("新增培训日程安排参与者信息")
+    @Log("新增培训计划参与者信息")
+    @ApiOperation("新增培训计划参与者信息")
     @PostMapping
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> create(@Validated @RequestBody TrainParticipant resource) {
@@ -57,8 +57,8 @@ public class TrParticipantController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("新增培训日程安排参与者信息")
-    @ApiOperation("新增培训日程安排参与者信息")
+    @Log("新增培训计划参与者信息")
+    @ApiOperation("新增培训计划参与者信息")
     @PostMapping("/batchSave")
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> batchSave(@Validated @RequestBody List<TrainParticipant> resources) {
@@ -71,8 +71,8 @@ public class TrParticipantController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("修改培训日程安排参与者信息")
-    @ApiOperation("修改培训日程安排参与者信息")
+    @Log("修改培训计划参与者信息")
+    @ApiOperation("修改培训计划参与者信息")
     @PutMapping
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> update(@Validated(TrainParticipant.Update.class) @RequestBody TrainParticipant resource) {
@@ -80,8 +80,8 @@ public class TrParticipantController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @Log("删除培训日程安排参与者信息")
-    @ApiOperation("删除培训日程安排参与者信息")
+    @Log("删除培训计划参与者信息")
+    @ApiOperation("删除培训计划参与者信息")
     @DeleteMapping
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
