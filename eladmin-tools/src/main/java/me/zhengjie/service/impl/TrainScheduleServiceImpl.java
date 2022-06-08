@@ -2,16 +2,15 @@ package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.constants.CommonConstants;
-import me.zhengjie.domain.FileDept;
-import me.zhengjie.domain.ScheduleBindingDept;
-import me.zhengjie.domain.TrainParticipant;
-import me.zhengjie.domain.TrainSchedule;
+import me.zhengjie.domain.*;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.repository.*;
 import me.zhengjie.service.TrainScheduleService;
+import me.zhengjie.service.dto.ToolsUserDto;
 import me.zhengjie.service.dto.TrainParticipantDto;
 import me.zhengjie.service.dto.TrainScheduleDto;
 import me.zhengjie.service.dto.TrainScheduleQueryCriteria;
+import me.zhengjie.service.mapstruct.ToolsUserMapper;
 import me.zhengjie.service.mapstruct.TrParticipantMapper;
 import me.zhengjie.service.mapstruct.TrainScheduleMapper;
 import me.zhengjie.utils.*;
@@ -38,8 +37,12 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private final TrainScheduleMapper scheduleMapper;
     private final TrainParticipantRepository participantRepository;
     private final ScheduleBindingDeptRepository bindingDeptRepository;
-    private final FileDeptRepository  deptRepository;
+    private final FileDeptRepository deptRepository;
     private final TrParticipantMapper trParticipantMapper;
+    private final TrainExamDepartRepository examDepartRepository;
+    private final TrainExamStaffRepository examStaffRepository;
+    private final ToolsUserRepository toolsUserRepository;
+    private final ToolsUserMapper toolsUserMapper;
 
     @Override
     public List<TrainScheduleDto> queryAll(TrainScheduleQueryCriteria criteria) {
@@ -91,14 +94,14 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
                 if (!schedule.getBindDepts().isEmpty()) {
                     // todo 处理涉及部门
                     List<String> deptNames = new ArrayList<>();
-                    schedule.getBindDepts().forEach(dept->{
+                    schedule.getBindDepts().forEach(dept -> {
                         deptNames.add(dept.getName());
                     });
-                    schedule.setBindDeptStr(StringUtils.join(deptNames,","));
+                    schedule.setBindDeptStr(StringUtils.join(deptNames, ","));
                 }
                 List<TrainParticipant> parts = participantRepository.findAllByTrScheduleId(schedule.getId());
                 List<TrainParticipantDto> partList = trParticipantMapper.toDto(parts);
-                if(ValidationUtil.isNotEmpty(partList)) {
+                if (ValidationUtil.isNotEmpty(partList)) {
                     initTrPartInfo(partList);
                 }
                 schedule.setPartList(partList);
@@ -142,8 +145,85 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         checkEditAuthorized(resource);
         initScheduleInfo(resource);
         judgeScheduleStatus(resource);
+        TrainSchedule schedule = scheduleRepository.findById(resource.getId()).orElseGet(TrainSchedule::new);
+        ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", resource.getId());
+        //  先判断是否需要同步考试数据,依据：是否考试标志发生变化
+        if (!resource.getIsExam().equals(schedule.getIsExam())) {
+            List<TrainParticipant> parts = participantRepository.findAllByTrScheduleIdAndIsValid(schedule.getId(),true);
+            if (ValidationUtil.isNotEmpty(parts)) {
+                if (resource.getIsExam()) {
+                    // 若更改为需要考试则需要自动生成考试信息
+                    parts.forEach(part->{
+                        initExamInfo(part, schedule);
+                    });
+                } else {
+                    // 若更改为不需要考试则自动删除已有考试
+                    examStaffRepository.deleteAllByTrScheduleId(resource.getId());
+                }
+            }
+        }
         scheduleRepository.save(resource);
-        // todo 若是不需要考试则删除对应的考试内容
+    }
+
+    private void initExamInfo(TrainParticipant resource, TrainSchedule schedule) {
+        // 若需要考试则自动生成相关考试内容
+        // 1.判断/生成考试所在部门
+        TrainExamDepart examDepart = examDepartRepository.findByDepartId(resource.getParticipantDepart());
+        if (examDepart != null) {
+            // 若该部门未启用则置为启用状态
+            if (!examDepart.getEnabled()) {
+                examDepart.setEnabled(true);
+                examDepartRepository.save(examDepart);
+            }
+        } else {
+            TrainExamDepart newDept = new TrainExamDepart();
+            newDept.setDepartId(resource.getParticipantDepart());
+            newDept.setEnabled(true);
+            examDepartRepository.save(newDept);
+        }
+        // 2.生成考试信息
+        initExamStaffInfo(resource, schedule);
+    }
+
+    private void initExamStaffInfo(TrainParticipant resource, TrainSchedule schedule) {
+        ToolsUserDto userDto = getToolsUserDto(resource);
+        TrainExamStaff examStaff = new TrainExamStaff();
+        examStaff.setDepartId(resource.getParticipantDepart());
+        examStaff.setHireDate(userDto.getHireDate());
+        examStaff.setStaffType(userDto.getStaffType());
+        examStaff.setJobNum(userDto.getJobNum());
+        examStaff.setJobName(userDto.getJobName());
+        examStaff.setJobType(userDto.getJobType());
+        examStaff.setSuperior(userDto.getSuperiorName());
+        examStaff.setWorkshop(userDto.getWorkshop());
+        examStaff.setTeam(userDto.getTeam());
+        examStaff.setStaffName(resource.getParticipantName());
+        examStaff.setTrScheduleId(schedule.getId());
+        examStaffRepository.save(examStaff);
+    }
+
+    private ToolsUserDto getToolsUserDto(TrainParticipant resource) {
+        ToolsUser user = toolsUserRepository.findByUsername(resource.getParticipantName());
+        ToolsUserDto userDto = toolsUserMapper.toDto(user);
+        if (ValidationUtil.isNotEmpty(Collections.singletonList(user.getJobs()))) {
+            List<ToolsJob> jobList = new ArrayList<>(user.getJobs());
+            userDto.setJobName(jobList.get(0).getName());
+        }
+        if (user.getSuperiorId() != null) {
+            ToolsUser sup = toolsUserRepository.findById(user.getSuperiorId()).orElseGet(ToolsUser::new);
+            ValidationUtil.isNull(sup.getId(), "ToolsUser", "id", user.getSuperiorId());
+            userDto.setSuperiorName(sup.getUsername());
+        } else if (user.getDept() != null) {
+            if (user.getDept().getPid() != null) {
+                ToolsUser sup = toolsUserRepository.findByDeptIdAndIsMaster(user.getDept().getPid(), true);
+                if (sup != null) {
+                    userDto.setSuperiorName(sup.getUsername());
+                }
+            } else {
+                userDto.setSuperiorName(userDto.getUsername());
+            }
+        }
+        return userDto;
     }
 
     private void initScheduleBindDepts(TrainSchedule resource, Set<ScheduleBindingDept> bindDepts) {

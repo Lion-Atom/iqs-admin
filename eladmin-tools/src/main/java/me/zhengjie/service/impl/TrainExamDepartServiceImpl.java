@@ -2,11 +2,15 @@ package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.FileDept;
+import me.zhengjie.domain.TrExamDepartFile;
 import me.zhengjie.domain.TrainExamDepart;
+import me.zhengjie.domain.TrainExamStaff;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.FileDeptRepository;
+import me.zhengjie.repository.TrExamDepartFileRepository;
 import me.zhengjie.repository.TrainExamDepartRepository;
+import me.zhengjie.repository.TrainExamStaffRepository;
 import me.zhengjie.service.TrainExamDepartService;
 import me.zhengjie.service.dto.TrainExamDepartDto;
 import me.zhengjie.service.dto.TrainExamDepartQueryCriteria;
@@ -31,6 +35,8 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
     private final TrainExamDepartRepository examDepartRepository;
     private final TrExamDepartMapper examDepartMapper;
     private final FileDeptRepository deptRepository;
+    private final TrExamDepartFileRepository fileRepository;
+    private final TrainExamStaffRepository staffRepository;
 
     @Override
     public List<TrainExamDepartDto> queryAll(TrainExamDepartQueryCriteria criteria) {
@@ -67,6 +73,14 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
     public void update(TrainExamDepart resource) {
         // todo 校验是否具备权限
         checkEditAuthorized(resource);
+        // 若更改为禁用则需要判断是否存在内容，若存在内容则不允许禁用
+        if(!resource.getEnabled()) {
+            List<TrainExamStaff> examStaffs = staffRepository.findAllByDepartId(resource.getDepartId());
+            List<TrExamDepartFile> examDepartFiles = fileRepository.findByDepartId(resource.getDepartId());
+            if(ValidationUtil.isNotEmpty(examDepartFiles) || ValidationUtil.isNotEmpty(examStaffs)) {
+                throw new BadRequestException("No Valid!抱歉，该部门下存在有效信息，不可禁用！");
+            }
+        }
         examDepartRepository.save(resource);
     }
 

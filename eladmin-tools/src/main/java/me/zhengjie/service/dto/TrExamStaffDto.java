@@ -49,6 +49,24 @@ public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private String jobType;
 
+    private String team;
+
+    private String staffType;
+
+    private Timestamp hireDate;
+
+    private String jobNum;
+
+    private Long trScheduleId;
+
+    private Timestamp trainTime;
+
+    private String trainTitle;
+
+    private String trainContent;
+
+    private String scheduleStatus;
+
     private Boolean isPassed = false;
 
     private Integer lastScore;

@@ -34,6 +34,8 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     private final TrainNewStaffRepository staffRepository;
     private final ToolsUserRepository toolsUserRepository;
     private final ToolsUserMapper toolsUserMapper;
+    private final TrainExamDepartRepository examDepartRepository;
+    private final TrainExamStaffRepository examStaffRepository;
 
 
     @Override
@@ -78,8 +80,32 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             trScheduleRepository.save(schedule);
             // 参与成功则自动生成相关培训内容
             initTrainStaffInfo(resource, schedule);
+            // 若需要考试则自动生成相关考试内容
+            initExamInfo(resource, schedule);
         }
         trParticipantRepository.save(resource);
+    }
+
+    private void initExamInfo(TrainParticipant resource, TrainSchedule schedule) {
+        if (schedule.getIsExam()) {
+            // 若需要考试则自动生成相关考试内容
+            // 1.判断/生成考试所在部门
+            TrainExamDepart examDepart = examDepartRepository.findByDepartId(resource.getParticipantDepart());
+            if (examDepart != null) {
+                // 若该部门未启用则置为启用状态
+                if (!examDepart.getEnabled()) {
+                    examDepart.setEnabled(true);
+                    examDepartRepository.save(examDepart);
+                }
+            } else {
+                TrainExamDepart newDept = new TrainExamDepart();
+                newDept.setDepartId(resource.getParticipantDepart());
+                newDept.setEnabled(true);
+                examDepartRepository.save(newDept);
+            }
+            // 2.生成考试信息
+            initExamStaffInfo(resource, schedule);
+        }
     }
 
     @Override
@@ -103,22 +129,56 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             }
             // 参与成功则自动生成相关员工培训内容
             initTrainStaffInfo(resource, schedule);
-            // todo 若需要考试则自动生成相关考试内容
-            if(schedule.getIsExam()) {
-                // 若需要考试则自动生成相关考试内容
-
-            }
+            // 若需要考试则自动生成相关考试内容
+            initExamInfo(resource, schedule);
         } else if (!resource.getIsValid() && old.getIsValid()) {
             schedule.setCurNum(schedule.getCurNum() - 1);
             trScheduleRepository.save(schedule);
             // 参与成功后撤销则自动撤回相关培训内容
-            staffRepository.deleteByDepartIdAndStaffName(resource.getParticipantDepart(), resource.getParticipantName());
-            // todo 若需要考试则自动生成相关考试内容
+            staffRepository.deleteByDepartIdAndTrScheduleIdAndStaffName(resource.getParticipantDepart(), resource.getTrScheduleId(), resource.getParticipantName());
+            // 若需要考试则自动删除已生成的相关考试内容
+            examStaffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getParticipantDepart(), resource.getTrScheduleId(), resource.getParticipantName());
         }
         trParticipantRepository.save(resource);
     }
 
     private void initTrainStaffInfo(TrainParticipant resource, TrainSchedule schedule) {
+        ToolsUserDto userDto = getToolsUserDto(resource);
+        TrainNewStaff staff = new TrainNewStaff();
+        staff.setStaffName(resource.getParticipantName());
+        staff.setDepartId(resource.getParticipantDepart());
+        staff.setTrScheduleId(schedule.getId());
+        staff.setStaffType(userDto.getStaffType());
+        staff.setJobType(userDto.getJobType());
+        staff.setJobName(userDto.getJobName());
+        staff.setSuperior(userDto.getSuperiorName());
+        staff.setHireDate(userDto.getHireDate());
+        staff.setWorkshop(userDto.getWorkshop());
+        staff.setTeam(userDto.getTeam());
+        staff.setJobNum(userDto.getJobNum());
+        staff.setIsFinished(false);
+        staff.setReason("培训尚未结束");
+        staffRepository.save(staff);
+    }
+
+    private void initExamStaffInfo(TrainParticipant resource, TrainSchedule schedule) {
+        ToolsUserDto userDto = getToolsUserDto(resource);
+        TrainExamStaff examStaff = new TrainExamStaff();
+        examStaff.setDepartId(resource.getParticipantDepart());
+        examStaff.setHireDate(userDto.getHireDate());
+        examStaff.setStaffType(userDto.getStaffType());
+        examStaff.setJobNum(userDto.getJobNum());
+        examStaff.setJobName(userDto.getJobName());
+        examStaff.setJobType(userDto.getJobType());
+        examStaff.setSuperior(userDto.getSuperiorName());
+        examStaff.setWorkshop(userDto.getWorkshop());
+        examStaff.setTeam(userDto.getTeam());
+        examStaff.setStaffName(resource.getParticipantName());
+        examStaff.setTrScheduleId(schedule.getId());
+        examStaffRepository.save(examStaff);
+    }
+
+    private ToolsUserDto getToolsUserDto(TrainParticipant resource) {
         ToolsUser user = toolsUserRepository.findByUsername(resource.getParticipantName());
         ToolsUserDto userDto = toolsUserMapper.toDto(user);
         if (ValidationUtil.isNotEmpty(Collections.singletonList(user.getJobs()))) {
@@ -139,22 +199,9 @@ public class TrParticipantServiceImpl implements TrParticipantService {
                 userDto.setSuperiorName(userDto.getUsername());
             }
         }
-        TrainNewStaff staff = new TrainNewStaff();
-        staff.setStaffName(resource.getParticipantName());
-        staff.setDepartId(resource.getParticipantDepart());
-        staff.setTrScheduleId(schedule.getId());
-        staff.setStaffType(userDto.getStaffType());
-        staff.setJobType(userDto.getJobType());
-        staff.setJobName(userDto.getJobName());
-        staff.setSuperior(userDto.getSuperiorName());
-        staff.setHireDate(userDto.getHireDate());
-        staff.setWorkshop(userDto.getWorkshop());
-        staff.setTeam(userDto.getTeam());
-        staff.setJobNum(userDto.getJobNum());
-        staff.setIsFinished(false);
-        staff.setReason("培训尚未结束");
-        staffRepository.save(staff);
+        return userDto;
     }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -182,7 +229,9 @@ public class TrParticipantServiceImpl implements TrParticipantService {
                     toPartNum++;
                     // 参与成功则自动生成相关培训内容
                     initTrainStaffInfo(participant, schedule);
-                    // todo 若需要考试则自动生成相关考试内容
+                    // 若需要考试则自动生成相关考试内容
+                    // 若需要考试则自动生成相关考试内容
+                    initExamInfo(participant, schedule);
                 }
             }
             if (diff < toPartNum) {

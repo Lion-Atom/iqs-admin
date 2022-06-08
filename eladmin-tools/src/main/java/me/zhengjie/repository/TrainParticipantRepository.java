@@ -47,6 +47,14 @@ public interface TrainParticipantRepository extends JpaRepository<TrainParticipa
     List<TrainParticipant> findAllByTrScheduleId(Long trScheduleId);
 
     /**
+     * @param trScheduleId 培训日程安排ID
+     * @param isValid 有效性
+     * @return 培训日程安排参与者信息
+     */
+    @Query(value = "select * from train_participant where train_schedule_id = ?1 and is_valid = ?2 order by train_participant_id asc", nativeQuery = true)
+    List<TrainParticipant> findAllByTrScheduleIdAndIsValid(Long trScheduleId,Boolean isValid);
+
+    /**
      * 查询参与者信息
      *
      * @param participantDepart 参与者所属部门

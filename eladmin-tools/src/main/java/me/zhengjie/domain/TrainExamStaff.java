@@ -7,6 +7,7 @@ import lombok.Setter;
 import me.zhengjie.base.BaseEntity;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -34,11 +35,15 @@ public class TrainExamStaff extends BaseEntity implements Serializable {
     private String staffName;
 
     @NotNull
+    @ApiModelProperty(value = "入职日期")
+    private Timestamp hireDate;
+
+    @NotNull
     @Column(name = "depart_id")
     @ApiModelProperty(value = "部门ID")
     private Long departId;
 
-    @NotNull
+    @NotBlank
     @ApiModelProperty(value = "上级主管")
     private String superior;
 
@@ -46,13 +51,24 @@ public class TrainExamStaff extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "岗位级别")
     private String jobName;
 
-    @NotNull
     @ApiModelProperty(value = "车间")
     private String workshop;
 
-    @NotNull
+    @ApiModelProperty(value = "班组")
+    private String team;
+
+    @ApiModelProperty(value = "工号")
+    private String jobNum;
+
+    @NotBlank
+    @ApiModelProperty(value = "员工分类")
+    private String staffType;
+
     @ApiModelProperty(value = "工种")
     private String jobType;
 
-
+    @NotNull
+    @Column(name = "train_schedule_id")
+    @ApiModelProperty(value = "培训计划ID")
+    private Long trScheduleId;
 }

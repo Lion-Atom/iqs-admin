@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrExamStaffTranscript;
 import me.zhengjie.domain.TrainExamStaff;
+import me.zhengjie.domain.TrainSchedule;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrExamStaffTranscriptRepository;
 import me.zhengjie.repository.TrainExamStaffRepository;
+import me.zhengjie.repository.TrainScheduleRepository;
 import me.zhengjie.service.TrainExamStaffService;
 import me.zhengjie.service.dto.TrExamStaffDto;
 import me.zhengjie.service.dto.TrainExamStaffQueryCriteria;
@@ -37,6 +39,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
     private final TrainExamStaffRepository staffRepository;
     private final FileDeptRepository deptRepository;
     private final TrExamStaffTranscriptRepository transcriptRepository;
+    private final TrainScheduleRepository trScheduleRepository;
 
     @Override
     public List<TrExamStaffDto> queryAll(TrainExamStaffQueryCriteria criteria) {
@@ -45,14 +48,34 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
         if (ValidationUtil.isNotEmpty(staffs)) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
+            Set<Long> scheduleIds = new HashSet<>();
+            Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
             list = staffMapper.toDto(staffs);
             list.forEach(staff -> {
                 deptIds.add(staff.getDepartId());
+                scheduleIds.add(staff.getTrScheduleId());
                 initStaffTranscript(staff);
             });
             initStaffDepartName(list, deptIds, deptMap);
+            initStaffScheduleInfo(list, scheduleIds, scheduleMap);
         }
         return list;
+    }
+
+    private void initStaffScheduleInfo(List<TrExamStaffDto> list, Set<Long> scheduleIds, Map<Long, TrainSchedule> scheduleMap) {
+        if (!scheduleIds.isEmpty()) {
+            List<TrainSchedule> sList = trScheduleRepository.findByIdIn(scheduleIds);
+            sList.forEach(schedule -> {
+                scheduleMap.put(schedule.getId(), schedule);
+            });
+            if (ValidationUtil.isNotEmpty(sList)) {
+                list.forEach(dto -> {
+                    dto.setTrainTitle(scheduleMap.get(dto.getTrScheduleId()).getTrainTitle());
+                    dto.setTrainTime(scheduleMap.get(dto.getTrScheduleId()).getTrainTime());
+                    dto.setScheduleStatus(scheduleMap.get(dto.getTrScheduleId()).getScheduleStatus());
+                });
+            }
+        }
     }
 
     private void initStaffTranscript(TrExamStaffDto staff) {
@@ -93,6 +116,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
             map.put("上级主管", dto.getSuperior());
             map.put("岗位", dto.getJobName());
             map.put("车间", dto.getWorkshop());
+            map.put("培训项目",dto.getTrainTitle());
             map.put("考试日期", dto.getLastExamDate());
             map.put("考试内容", dto.getLastExamContent());
             map.put("考试分数", dto.getLastScore());
@@ -115,6 +139,12 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
             list = staffMapper.toDto(page.getContent());
             // 根据试卷信息返回考试结果等信息
             list.forEach(this::initStaffTranscript);
+            Set<Long> scheduleIds = new HashSet<>();
+            Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
+            list.forEach(staff -> {
+                scheduleIds.add(staff.getTrScheduleId());
+            });
+            initStaffScheduleInfo(list, scheduleIds, scheduleMap);
             total = page.getTotalElements();
         }
         map.put("content", list);
@@ -134,7 +164,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(TrExamStaffDto resource) {
-        TrainExamStaff staff = staffRepository.findAllByDepartIdAndStaffName(resource.getDepartId(), resource.getStaffName());
+        TrainExamStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(),resource.getTrScheduleId(), resource.getStaffName());
         if (staff != null) {
             throw new EntityExistException(TrainExamStaff.class, "staffName", resource.getStaffName());
         }
@@ -154,7 +184,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
     public void update(TrainExamStaff resource) {
         TrainExamStaff entity = staffRepository.findById(resource.getId()).orElseGet(TrainExamStaff::new);
         ValidationUtil.isNull(entity.getId(), "TrainNewStaff", "id", resource.getId());
-        TrainExamStaff staff = staffRepository.findAllByDepartIdAndStaffName(resource.getDepartId(), resource.getStaffName());
+        TrainExamStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(),resource.getTrScheduleId(), resource.getStaffName());
         if (staff != null && !staff.getId().equals(resource.getId())) {
             throw new EntityExistException(TrainExamStaff.class, "staffName", resource.getStaffName());
         }

@@ -40,26 +40,20 @@ public interface TrainNewStaffRepository extends JpaRepository<TrainNewStaff, Lo
     void deleteAllByIdIn(Set<Long> ids);
 
     /**
-     * @param departId  部门ID
-     * @param staffName 员工姓名
-     * @return 新员工集合
-     */
-    @Query(value = "select * from train_new_staff where depart_id = ?1 and staff_name = ?2 ", nativeQuery = true)
-    List<TrainNewStaff> findAllByDepartIdAndStaffName(Long departId, String staffName);
-
-    /**
-     * @param departId  部门ID
-     * @param staffName 员工姓名
-     * @return 新员工集合
+     * @param departId     部门ID
+     * @param trScheduleId 培训计划ID
+     * @param staffName    员工姓名
      */
     @Modifying
-    @Query(value = "delete from train_new_staff where depart_id = ?1 and staff_name = ?2 ", nativeQuery = true)
-    void deleteByDepartIdAndStaffName(Long departId, String staffName);
+    @Query(value = "delete from train_new_staff where depart_id = ?1 and train_schedule_id = ?2 and staff_name = ?3 ", nativeQuery = true)
+    void deleteByDepartIdAndTrScheduleIdAndStaffName(Long departId, Long trScheduleId, String staffName);
 
     /**
-     * @param staffName 员工姓名
+     * @param departId     部门ID
+     * @param staffName    员工姓名
+     * @param trScheduleId 培训计划ID
      * @return 新员工集合
      */
-    @Query(value = "select * from train_new_staff where staff_name = ?1 ", nativeQuery = true)
-    TrainNewStaff findAllByStaffName(String staffName);
+    @Query(value = "select * from train_new_staff where depart_id = ?1 and train_schedule_id = ?2 and staff_name = ?3 ", nativeQuery = true)
+    TrainNewStaff findAllByDepartIdAndTrScheduleIdAndStaffName(Long departId, Long trScheduleId, String staffName);
 }

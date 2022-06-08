@@ -18,6 +18,7 @@ package me.zhengjie.repository;
 import me.zhengjie.domain.TrainExamStaff;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -39,10 +40,27 @@ public interface TrainExamStaffRepository extends JpaRepository<TrainExamStaff, 
     void deleteAllByIdIn(Set<Long> ids);
 
     /**
-     * @param departId  部门ID
-     * @param staffName 员工姓名
+     * @param departId     部门ID
+     * @param trScheduleId 培训计划ID
+     * @param staffName    员工姓名
      * @return 新员工集合
      */
-    @Query(value = "select * from train_exam_staff where depart_id = ?1 and staff_name = ?2 ", nativeQuery = true)
-    TrainExamStaff findAllByDepartIdAndStaffName(Long departId, String staffName);
+    @Query(value = "select * from train_exam_staff where depart_id = ?1 and train_schedule_id = ?2 and staff_name = ?3 ", nativeQuery = true)
+    TrainExamStaff findAllByDepartIdAndTrScheduleIdAndStaffName(Long departId, Long trScheduleId, String staffName);
+
+    /**
+     * 删除培训计划下考试信息
+     *
+     * @param trScheduleId 培训计划ID
+     */
+    @Modifying
+    @Query(value = "delete from train_exam_staff where train_schedule_id = ?1", nativeQuery = true)
+    void deleteAllByTrScheduleId(Long trScheduleId);
+
+    /**
+     * @param departId 部门ID
+     * @return 新员工集合
+     */
+    @Query(value = "select * from train_exam_staff where depart_id = ?1", nativeQuery = true)
+    List<TrainExamStaff> findAllByDepartId(Long departId);
 }

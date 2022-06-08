@@ -5,6 +5,7 @@ import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainNewStaff;
 import me.zhengjie.domain.TrainSchedule;
 import me.zhengjie.exception.EntityExistException;
+import me.zhengjie.exception.EntityIDExistException;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrNewStaffFileRepository;
 import me.zhengjie.repository.TrainNewStaffRepository;
@@ -46,7 +47,6 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
             Map<Long, String> deptMap = new HashMap<>();
             Set<Long> scheduleIds = new HashSet<>();
             Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
-            Map<Long, String> trainStatusMap = new HashMap<>();
             list = staffMapper.toDto(staffs);
             list.forEach(staff -> {
                 deptIds.add(staff.getDepartId());
@@ -154,9 +154,9 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
     public void update(TrainNewStaff resource) {
         TrainNewStaff entity = staffRepository.findById(resource.getId()).orElseGet(TrainNewStaff::new);
         ValidationUtil.isNull(entity.getId(), "TrainNewStaff", "id", resource.getId());
-        TrainNewStaff staff = staffRepository.findAllByStaffName(resource.getStaffName());
+        TrainNewStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(), resource.getTrScheduleId(), resource.getStaffName());
         if (staff != null && !staff.getId().equals(resource.getId())) {
-            throw new EntityExistException(TrainNewStaff.class, "staffName", resource.getStaffName());
+            throw new EntityIDExistException(TrainNewStaff.class, "trScheduleId", resource.getTrScheduleId().toString());
         }
         if (entity.getIsFinished()) {
             resource.setReason(null);
@@ -169,14 +169,10 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(TrainNewStaffDto resource) {
-        TrainNewStaff staff = staffRepository.findAllByStaffName(resource.getStaffName());
+        TrainNewStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(), resource.getTrScheduleId(), resource.getStaffName());
         if (staff != null) {
-            throw new EntityExistException(TrainNewStaff.class, "staffName", resource.getStaffName());
+            throw new EntityIDExistException(TrainNewStaff.class, "trScheduleId", resource.getTrScheduleId().toString());
         }
-       /* List<TrainNewStaff> staffList = staffRepository.findAllByDepartIdAndStaffName(resource.getDepartId(), resource.getStaffName());
-        if (ValidationUtil.isNotEmpty(staffList)) {
-            throw new EntityExistException(TrainNewStaff.class, "staffName", resource.getStaffName());
-        }*/
         if (resource.getIsFinished()) {
             resource.setReason(null);
         }

@@ -69,6 +69,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
                     FileUtil.getSize(multipartFile.getSize())
             );
             transcriptRepository.save(transcript);
+            // todo 反查员工培训，确定是否发证书？若需要，当考试通过时候则需要同步证书
         } catch (Exception e) {
             FileUtil.del(file);
             throw e;
