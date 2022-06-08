@@ -45,4 +45,13 @@ public interface TrainScheduleRepository extends JpaRepository<TrainSchedule, Lo
      */
     @Query(value = "select * from train_schedule where is_remind = ?1 ", nativeQuery = true)
     List<TrainSchedule> findAllByIsRemind(boolean b);
+
+    /**
+     * 根据标识集合查询培训计划信息
+     *
+     * @param scheduleIds 标识集合
+     * @return 培训计划信息
+     */
+    @Query(value = "SELECT * FROM train_schedule where train_schedule_id in ?1", nativeQuery = true)
+    List<TrainSchedule> findByIdIn(Set<Long> scheduleIds);
 }

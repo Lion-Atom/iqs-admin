@@ -54,7 +54,7 @@ public interface TrainParticipantRepository extends JpaRepository<TrainParticipa
      * @return 参与者信息
      */
     @Query(value = "select * from train_participant where participant_depart = ?1 and participant_name = ?2 ", nativeQuery = true)
-    TrainParticipant findByDepartNameAndPartName(String participantDepart, String participantName);
+    TrainParticipant findByDepartIdAndPartName(Long participantDepart, String participantName);
 
     /**
      * @param trScheduleIds 培训日程安排IDS

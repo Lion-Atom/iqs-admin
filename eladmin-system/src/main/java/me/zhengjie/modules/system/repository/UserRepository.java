@@ -125,6 +125,19 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             " AND u.enabled = true ", nativeQuery = true)
     List<User> findByDeptIdAndIsMaster(Long deptId, Boolean isDepartMaster);
 
+    /**
+     * 根据角色中的部门查询
+     *
+     * @param deptIds /
+     * @return /
+     */
+    @Query(value = "SELECT u.* FROM sys_user u, sys_dept d WHERE " +
+            " u.dept_id = d.dept_id " +
+            " AND d.dept_id in ?1 " +
+            " AND u.is_depart_master = ?2 " +
+            " AND u.enabled = true ", nativeQuery = true)
+    List<User> findByDeptIdInAndIsMaster(Set<Long> deptIds, Boolean isDepartMaster);
+
 
     /**
      * 根据菜单查询

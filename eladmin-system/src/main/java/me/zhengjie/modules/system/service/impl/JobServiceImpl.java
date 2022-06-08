@@ -74,7 +74,7 @@ public class JobServiceImpl implements JobService {
     @Cacheable(key = "'id:' + #p0")
     public JobDto findById(Long id) {
         Job job = jobRepository.findById(id).orElseGet(Job::new);
-        ValidationUtil.isNull(job.getId(), "Job", "id", id);
+        ValidationUtil.isNull(job.getId(), "ToolsJob", "id", id);
         return jobMapper.toDto(job);
     }
 
@@ -114,7 +114,7 @@ public class JobServiceImpl implements JobService {
         if (old != null && !old.getId().equals(resources.getId())) {
             throw new EntityExistException(Job.class, "name", resources.getName());
         }
-        ValidationUtil.isNull(job.getId(), "Job", "id", resources.getId());
+        ValidationUtil.isNull(job.getId(), "ToolsJob", "id", resources.getId());
         resources.setId(job.getId());
         jobRepository.save(resources);
         // 更新父节点中子节点数目

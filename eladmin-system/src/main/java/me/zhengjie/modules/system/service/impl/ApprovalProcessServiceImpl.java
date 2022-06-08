@@ -50,8 +50,8 @@ public class ApprovalProcessServiceImpl implements ApprovalProcessService {
             List<Long> appIds = new ArrayList<>();
             list.forEach(dto -> {
                 /*// 获取首批人
-                User user = userRepository.findById(dto.getApprovedBy()).orElseGet(User::new);
-                ValidationUtil.isNull(user.getId(), "User", "id", dto.getApprovedBy());
+                ToolsUser user = userRepository.findById(dto.getApprovedBy()).orElseGet(ToolsUser::new);
+                ValidationUtil.isNull(user.getId(), "ToolsUser", "id", dto.getApprovedBy());
                 if(user.getDept()!=null){
                     dto.setApprover(user.getDept().getName()+" - "+user.getUsername());
                 }else {

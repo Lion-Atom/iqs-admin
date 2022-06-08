@@ -13,21 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.modules.system.service.dto;
+package me.zhengjie.service.dto;
 
 import lombok.Data;
-import java.io.Serializable;
+import me.zhengjie.annotation.Query;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
-* @author Zheng Jie
-* @date 2019-6-10 16:32:18
+* @author TongMin Jie
+* @date 2022-06-06 10:49:34
 */
 @Data
-public class DeptSmallDto implements Serializable {
+public class ParticipantQueryByExample {
 
-    private Long id;
+    @Query
+    private Long trScheduleId;
 
-    private String name;
+    @Query
+    private Long participantDepart;
 
-    private Long pid;
 }

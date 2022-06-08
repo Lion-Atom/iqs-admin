@@ -2,17 +2,17 @@ package me.zhengjie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.constants.CommonConstants;
+import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.ScheduleBindingDept;
 import me.zhengjie.domain.TrainParticipant;
 import me.zhengjie.domain.TrainSchedule;
 import me.zhengjie.exception.BadRequestException;
-import me.zhengjie.repository.ScheduleBindingDeptRepository;
-import me.zhengjie.repository.TrScheduleFileRepository;
-import me.zhengjie.repository.TrainParticipantRepository;
-import me.zhengjie.repository.TrainScheduleRepository;
+import me.zhengjie.repository.*;
 import me.zhengjie.service.TrainScheduleService;
+import me.zhengjie.service.dto.TrainParticipantDto;
 import me.zhengjie.service.dto.TrainScheduleDto;
 import me.zhengjie.service.dto.TrainScheduleQueryCriteria;
+import me.zhengjie.service.mapstruct.TrParticipantMapper;
 import me.zhengjie.service.mapstruct.TrainScheduleMapper;
 import me.zhengjie.utils.*;
 import org.springframework.data.domain.Page;
@@ -38,6 +38,8 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private final TrainScheduleMapper scheduleMapper;
     private final TrainParticipantRepository participantRepository;
     private final ScheduleBindingDeptRepository bindingDeptRepository;
+    private final FileDeptRepository  deptRepository;
+    private final TrParticipantMapper trParticipantMapper;
 
     @Override
     public List<TrainScheduleDto> queryAll(TrainScheduleQueryCriteria criteria) {
@@ -65,7 +67,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
             map.put("培训内容", dto.getTrainContent());
             map.put("培训人", dto.getTrainer());
             map.put("培训地点", dto.getTrainLocation());
-            map.put("涉及部门", dto.getDepartment());
+            map.put("涉及部门", dto.getBindDeptStr());
             map.put("报名截止时间", dto.getRegDeadline());
             map.put("培训机构", dto.getTrainIns());
             map.put("培训费用", dto.getCost());
@@ -86,11 +88,20 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             list = scheduleMapper.toDto(page.getContent());
             list.forEach(schedule -> {
-                if (schedule.getDepartment() != null) {
-                    schedule.setDepartTags(schedule.getDepartment().split(","));
+                if (!schedule.getBindDepts().isEmpty()) {
+                    // todo 处理涉及部门
+                    List<String> deptNames = new ArrayList<>();
+                    schedule.getBindDepts().forEach(dept->{
+                        deptNames.add(dept.getName());
+                    });
+                    schedule.setBindDeptStr(StringUtils.join(deptNames,","));
                 }
                 List<TrainParticipant> parts = participantRepository.findAllByTrScheduleId(schedule.getId());
-                schedule.setPartList(parts);
+                List<TrainParticipantDto> partList = trParticipantMapper.toDto(parts);
+                if(ValidationUtil.isNotEmpty(partList)) {
+                    initTrPartInfo(partList);
+                }
+                schedule.setPartList(partList);
             });
             total = page.getTotalElements();
         }
@@ -99,10 +110,29 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         return map;
     }
 
+    private void initTrPartInfo(List<TrainParticipantDto> partList) {
+        Set<Long> deptIds = new HashSet<>();
+        Map<Long, String> deptMap = new HashMap<>();
+        partList.forEach(part -> {
+            deptIds.add(part.getParticipantDepart());
+        });
+        List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
+        if (ValidationUtil.isNotEmpty(deptList)) {
+            deptList.forEach(dept -> {
+                deptMap.put(dept.getId(), dept.getName());
+            });
+            partList.forEach(part -> {
+                part.setParticipantDepartName(deptMap.get(part.getParticipantDepart()));
+            });
+        }
+    }
+
     @Override
-    public TrainScheduleDto findById(Long id) {
+    public TrainSchedule findById(Long id) {
         // todo  暂时用不到，不想写。。。
-        return null;
+        TrainSchedule schedule = scheduleRepository.findById(id).orElseGet(TrainSchedule::new);
+        ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", id);
+        return schedule;
     }
 
     @Override
@@ -113,6 +143,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         initScheduleInfo(resource);
         judgeScheduleStatus(resource);
         scheduleRepository.save(resource);
+        // todo 若是不需要考试则删除对应的考试内容
     }
 
     private void initScheduleBindDepts(TrainSchedule resource, Set<ScheduleBindingDept> bindDepts) {

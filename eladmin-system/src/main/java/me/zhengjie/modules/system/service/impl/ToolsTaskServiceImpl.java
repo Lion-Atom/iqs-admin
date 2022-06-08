@@ -102,7 +102,7 @@ public class ToolsTaskServiceImpl implements ToolsTaskService {
 
                 // 获取审批人姓名
                 User user = userRepository.findById(dto.getApprovedBy()).orElseGet(User::new);
-                ValidationUtil.isNull(user.getId(), "User", "id", dto.getApprovedBy());
+                ValidationUtil.isNull(user.getId(), "ToolsUser", "id", dto.getApprovedBy());
                 if (user.getDept() != null) {
                     dto.setApprover(user.getDept().getName() + " - " + user.getUsername());
                 } else {

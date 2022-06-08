@@ -3,10 +3,12 @@ package me.zhengjie.service.impl;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainNewStaff;
+import me.zhengjie.domain.TrainSchedule;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrNewStaffFileRepository;
 import me.zhengjie.repository.TrainNewStaffRepository;
+import me.zhengjie.repository.TrainScheduleRepository;
 import me.zhengjie.service.TrainNewStaffService;
 import me.zhengjie.service.dto.TrainNewStaffDto;
 import me.zhengjie.service.dto.TrainNewStaffQueryCriteria;
@@ -29,6 +31,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class TrainNewStaffServiceImpl implements TrainNewStaffService {
 
+    private final TrainScheduleRepository trScheduleRepository;
     private final TrainNewStaffRepository staffRepository;
     private final TrNewStaffFileRepository fileRepository;
     private final FileDeptRepository deptRepository;
@@ -41,13 +44,34 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
         if (ValidationUtil.isNotEmpty(staffs)) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
+            Set<Long> scheduleIds = new HashSet<>();
+            Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
+            Map<Long, String> trainStatusMap = new HashMap<>();
             list = staffMapper.toDto(staffs);
             list.forEach(staff -> {
                 deptIds.add(staff.getDepartId());
+                scheduleIds.add(staff.getTrScheduleId());
             });
             initStaffDepartName(list, deptIds, deptMap);
+            initStaffScheduleInfo(list, scheduleIds, scheduleMap);
         }
         return list;
+    }
+
+    private void initStaffScheduleInfo(List<TrainNewStaffDto> list, Set<Long> scheduleIds, Map<Long, TrainSchedule> scheduleMap) {
+        if (!scheduleIds.isEmpty()) {
+            List<TrainSchedule> sList = trScheduleRepository.findByIdIn(scheduleIds);
+            sList.forEach(schedule -> {
+                scheduleMap.put(schedule.getId(), schedule);
+            });
+            if (ValidationUtil.isNotEmpty(sList)) {
+                list.forEach(dto -> {
+                    dto.setTrainTitle(scheduleMap.get(dto.getTrScheduleId()).getTrainTitle());
+                    dto.setTrainTime(scheduleMap.get(dto.getTrScheduleId()).getTrainTime());
+                    dto.setScheduleStatus(scheduleMap.get(dto.getTrScheduleId()).getScheduleStatus());
+                });
+            }
+        }
     }
 
     private void initStaffDepartName(List<TrainNewStaffDto> list, Set<Long> deptIds, Map<Long, String> deptMap) {
@@ -77,7 +101,7 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
             map.put("岗位", dto.getJobName());
             map.put("车间", dto.getWorkshop());
             map.put("班组", dto.getTeam());
-            map.put("培训内容", dto.getTrainContent());
+            map.put("培训项目", dto.getTrainTitle());
             map.put("是否完成培训", dto.getIsFinished() ? "是" : "否");
             map.put("未完成原因", dto.getReason());
             map.put("创建日期", dto.getCreateTime());
@@ -95,11 +119,16 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
+            Set<Long> scheduleIds = new HashSet<>();
+            Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
+            Map<Long, String> trainStatusMap = new HashMap<>();
             list = staffMapper.toDto(page.getContent());
             list.forEach(staff -> {
                 deptIds.add(staff.getDepartId());
+                scheduleIds.add(staff.getTrScheduleId());
             });
             initStaffDepartName(list, deptIds, deptMap);
+            initStaffScheduleInfo(list, scheduleIds, scheduleMap);
             total = page.getTotalElements();
         }
         map.put("content", list);

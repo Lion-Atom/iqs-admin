@@ -57,7 +57,17 @@ public class TrainNewStaffDto extends BaseDTO implements Serializable {
 
     private String jobType;
 
+//    private String trainContent;
+
+    private Long trScheduleId;
+
+    private Timestamp trainTime;
+
+    private String trainTitle;
+
     private String trainContent;
+
+    private String scheduleStatus;
 
     private Boolean isFinished;
 

@@ -15,11 +15,8 @@
  */
 package me.zhengjie.domain;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import me.zhengjie.base.BaseEntity;
 
@@ -27,42 +24,57 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
- * @author TongMinjie
- * @date 2022-05-07
- */
+* @author Zheng Jie
+* @date 2019-03-29
+*/
+@Entity
 @Getter
 @Setter
-@Entity
-@Table(name = "train_participant")
-@NoArgsConstructor
-public class TrainParticipant extends BaseEntity implements Serializable {
+@Table(name="sys_job")
+public class ToolsJob extends BaseEntity implements Serializable {
 
     @Id
-    @Column(name = "train_participant_id")
+    @Column(name = "job_id")
+    @NotNull(groups = Update.class)
     @ApiModelProperty(value = "ID", hidden = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(name = "train_schedule_id")
-    @ApiModelProperty(value = "培训计划ID")
-    private Long trScheduleId;
-
-    @NotNull
-    @Column(name = "participant_depart")
-    @ApiModelProperty(value = "所属部门")
-    private Long participantDepart;
-
     @NotBlank
-    @Column(name = "participant_name")
-    @ApiModelProperty(value = "参与者")
-    private String participantName;
+    @ApiModelProperty(value = "岗位名称")
+    private String name;
 
     @NotNull
-    @Column(name = "is_valid")
-    @ApiModelProperty(value = "是否有效")
-    private Boolean isValid;
+    @ApiModelProperty(value = "岗位排序")
+    private Long jobSort;
 
+    @NotNull
+    @ApiModelProperty(value = "是否启用")
+    private Boolean enabled;
+
+    @ApiModelProperty(value = "上级职位")
+    private Long pid;
+
+    @ApiModelProperty(value = "子节点数目", hidden = true)
+    private Integer subCount = 0;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ToolsJob toolsJob = (ToolsJob) o;
+        return Objects.equals(id, toolsJob.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

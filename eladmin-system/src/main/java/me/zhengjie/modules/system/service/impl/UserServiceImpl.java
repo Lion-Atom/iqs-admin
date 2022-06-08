@@ -75,17 +75,34 @@ public class UserServiceImpl implements UserService {
         // 获取上级主管和部门信息
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             list = userMapper.toDto(page.getContent());
-            Map<Long, String> nameMap = new HashMap<>();
+            // 上级部门ID集合
+            Set<Long> pidList = new HashSet<>();
+            Map<Long, String> pmMap = new HashMap<>();
+            // 员工ID集合
             Set<Long> idList = new HashSet<>();
+            Map<Long, String> nameMap = new HashMap<>();
             list.forEach(user -> {
                 if (user.getDept() != null) {
+                    user.setDeptId(user.getDept().getId());
                     user.setDeptName(user.getDept().getName());
                 }
                 if (user.getSuperiorId() != null) {
                     idList.add(user.getSuperiorId());
+                } else if (user.getDept() != null && user.getDept().getPid() != null) {
+                    pidList.add(user.getDept().getPid());
+                }
+                if (ValidationUtil.isNotEmpty(Collections.singletonList(user.getJobs()))) {
+                    List<JobSmallDto> jobList = new ArrayList<>(user.getJobs());
+                    user.setJobName(jobList.get(0).getName());
                 }
             });
             List<User> superiors = userRepository.findAllById(idList);
+            List<User> pDeptMasterList = userRepository.findByDeptIdInAndIsMaster(pidList, true);
+            if (ValidationUtil.isNotEmpty(pDeptMasterList)) {
+                pDeptMasterList.forEach(pm -> {
+                    pmMap.put(pm.getDept().getId(), pm.getUsername());
+                });
+            }
             if (ValidationUtil.isNotEmpty(superiors)) {
                 superiors.forEach(superior -> {
                     nameMap.put(superior.getId(), superior.getUsername());
@@ -94,6 +111,14 @@ public class UserServiceImpl implements UserService {
             list.forEach(user -> {
                 if (user.getSuperiorId() != null) {
                     user.setSuperiorName(nameMap.get(user.getSuperiorId()));
+                } else if (user.getDept() != null) {
+                    // 向上找上级
+                    if (user.getDept().getPid() != null) {
+                        user.setSuperiorName(pmMap.get(user.getDept().getPid()));
+                    } else {
+                        // 找不到默认为自身
+                        user.setSuperiorName(user.getUsername());
+                    }
                 }
             });
             total = page.getTotalElements();

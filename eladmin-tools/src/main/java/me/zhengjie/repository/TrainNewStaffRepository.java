@@ -18,6 +18,7 @@ package me.zhengjie.repository;
 import me.zhengjie.domain.TrainNewStaff;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -45,6 +46,15 @@ public interface TrainNewStaffRepository extends JpaRepository<TrainNewStaff, Lo
      */
     @Query(value = "select * from train_new_staff where depart_id = ?1 and staff_name = ?2 ", nativeQuery = true)
     List<TrainNewStaff> findAllByDepartIdAndStaffName(Long departId, String staffName);
+
+    /**
+     * @param departId  部门ID
+     * @param staffName 员工姓名
+     * @return 新员工集合
+     */
+    @Modifying
+    @Query(value = "delete from train_new_staff where depart_id = ?1 and staff_name = ?2 ", nativeQuery = true)
+    void deleteByDepartIdAndStaffName(Long departId, String staffName);
 
     /**
      * @param staffName 员工姓名

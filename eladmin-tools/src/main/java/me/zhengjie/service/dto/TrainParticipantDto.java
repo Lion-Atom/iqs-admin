@@ -13,21 +13,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.modules.system.service.dto;
+package me.zhengjie.service.dto;
 
-import lombok.Data;
+
+import lombok.*;
+import me.zhengjie.base.BaseDTO;
+
 import java.io.Serializable;
 
 /**
-* @author Zheng Jie
-* @date 2019-6-10 16:32:18
-*/
+ * @author TongMinjie
+ * @date 2022-06-07
+ */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class DeptSmallDto implements Serializable {
+public class TrainParticipantDto extends BaseDTO implements Serializable {
 
     private Long id;
 
-    private String name;
+    private Long trScheduleId;
 
-    private Long pid;
+    private Long participantDepart;
+
+    private String participantDepartName;
+
+    private String participantName;
+
+    private Boolean isValid;
+
 }

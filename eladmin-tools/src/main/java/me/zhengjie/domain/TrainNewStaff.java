@@ -78,9 +78,14 @@ public class TrainNewStaff extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "岗位")
     private String jobName;
 
-    @NotBlank
-    @ApiModelProperty(value = "培训内容")
-    private String trainContent;
+    @NotNull
+    @Column(name = "train_schedule_id")
+    @ApiModelProperty(value = "培训计划ID")
+    private Long trScheduleId;
+
+//    @NotBlank
+//    @ApiModelProperty(value = "培训内容")
+//    private String trainContent;
 
     @NotNull
     @ApiModelProperty(value = "是否完成入职培训")

@@ -74,10 +74,6 @@ public class TrainSchedule extends BaseEntity implements Serializable {
     private String trainIns;
 
     @NotBlank
-    @ApiModelProperty(value = "涉及部门")
-    private String department;
-
-    @NotBlank
     @ApiModelProperty(value = "培训类型")
     private String trainType;
 
@@ -106,7 +102,7 @@ public class TrainSchedule extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "延期原因描述")
     private String delayDesc;
 
-    @ApiModelProperty(value = "日程安排状态")
+    @ApiModelProperty(value = "培训计划状态")
     private String scheduleStatus;
 
     @NotNull

@@ -7,6 +7,7 @@ import me.zhengjie.annotation.Log;
 import me.zhengjie.domain.TrainParticipant;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.service.TrParticipantService;
+import me.zhengjie.service.dto.ParticipantQueryByExample;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,11 +31,18 @@ public class TrParticipantController {
     private final TrParticipantService trParticipantService;
     private static final String ENTITY_NAME = "TrainParticipant";
 
-    @ApiOperation("查询培训日程参与者信息")
+    @ApiOperation("查询培训计划参与者信息")
     @GetMapping(value = "/byTrScheduleId")
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> getByTrScheduleId(@RequestParam("trScheduleId") Long trScheduleId) {
         return new ResponseEntity<>(trParticipantService.getByTrScheduleId(trScheduleId), HttpStatus.OK);
+    }
+
+    @ApiOperation("查询培训计划制定部门已有参与者信息")
+    @PostMapping(value = "/byExample")
+    @PreAuthorize("@el.check('train:list')")
+    public ResponseEntity<Object> getByExample(@RequestBody ParticipantQueryByExample example) {
+        return new ResponseEntity<>(trParticipantService.getByExample(example), HttpStatus.OK);
     }
 
     @Log("新增培训日程安排参与者信息")

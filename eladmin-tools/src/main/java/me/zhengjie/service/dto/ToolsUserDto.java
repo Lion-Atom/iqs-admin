@@ -13,12 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.modules.system.service.dto;
+package me.zhengjie.service.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Getter;
 import lombok.Setter;
 import me.zhengjie.base.BaseDTO;
+import me.zhengjie.domain.FileDept;
+import me.zhengjie.domain.ToolsJob;
+import me.zhengjie.domain.ToolsUser;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -31,17 +34,15 @@ import java.util.Set;
  */
 @Getter
 @Setter
-public class UserDto extends BaseDTO implements Serializable {
+public class ToolsUserDto extends BaseDTO implements Serializable {
 
     private Long id;
 
-    private Set<RoleSmallDto> roles;
-
-    private Set<JobSmallDto> jobs;
+    private Set<ToolsJob> jobs;
 
     private String jobName;
 
-    private DeptSmallDto dept;
+    private FileDept dept;
 
     private Long deptId;
 

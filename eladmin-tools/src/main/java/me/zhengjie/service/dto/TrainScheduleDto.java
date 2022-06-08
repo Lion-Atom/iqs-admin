@@ -54,10 +54,6 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private String trainIns;
 
-    private String department;
-
-    private String[] departTags;
-
     private String trainType;
 
     private Integer totalNum;
@@ -80,7 +76,9 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private List<TrScheduleFile> fileList = new ArrayList<>();
 
-    private List<TrainParticipant> partList = new ArrayList<>();
+    private List<TrainParticipantDto> partList = new ArrayList<>();
 
     private Set<ScheduleDept> bindDepts;
+
+    private String bindDeptStr;
 }

@@ -49,7 +49,7 @@ public interface TrainScheduleService {
      * @param id /
      * @return /
      */
-    TrainScheduleDto findById(Long id);
+    TrainSchedule findById(Long id);
 
     /**
      * 更新

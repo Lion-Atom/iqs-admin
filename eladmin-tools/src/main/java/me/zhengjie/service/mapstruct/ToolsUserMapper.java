@@ -13,21 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.modules.system.service.dto;
+package me.zhengjie.service.mapstruct;
 
-import lombok.Data;
-import java.io.Serializable;
+import me.zhengjie.base.BaseMapper;
+import me.zhengjie.domain.ToolsUser;
+import me.zhengjie.service.dto.ToolsUserDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
 /**
-* @author Zheng Jie
-* @date 2019-6-10 16:32:18
-*/
-@Data
-public class DeptSmallDto implements Serializable {
-
-    private Long id;
-
-    private String name;
-
-    private Long pid;
+ * @author Zheng Jie
+ * @date 2018-11-23
+ */
+@Mapper(componentModel = "spring",unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ToolsUserMapper extends BaseMapper<ToolsUserDto, ToolsUser> {
 }
