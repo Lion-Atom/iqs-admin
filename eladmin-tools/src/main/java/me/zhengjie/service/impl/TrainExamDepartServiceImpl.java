@@ -12,8 +12,11 @@ import me.zhengjie.repository.TrExamDepartFileRepository;
 import me.zhengjie.repository.TrainExamDepartRepository;
 import me.zhengjie.repository.TrainExamStaffRepository;
 import me.zhengjie.service.TrainExamDepartService;
+import me.zhengjie.service.TrainExamStaffService;
+import me.zhengjie.service.dto.TrExamStaffDto;
 import me.zhengjie.service.dto.TrainExamDepartDto;
 import me.zhengjie.service.dto.TrainExamDepartQueryCriteria;
+import me.zhengjie.service.dto.TrainExamStaffQueryCriteria;
 import me.zhengjie.service.mapstruct.TrExamDepartMapper;
 import me.zhengjie.utils.QueryHelp;
 import me.zhengjie.utils.SecurityUtils;
@@ -37,6 +40,7 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
     private final FileDeptRepository deptRepository;
     private final TrExamDepartFileRepository fileRepository;
     private final TrainExamStaffRepository staffRepository;
+    private final TrainExamStaffService examStaffService;
 
     @Override
     public List<TrainExamDepartDto> queryAll(TrainExamDepartQueryCriteria criteria) {
@@ -47,41 +51,51 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
             Map<Long, String> deptMap = new HashMap<>();
             list = examDepartMapper.toDto(examDeparts);
             // todo 批量查询考试信息
-            Map<Long,List<TrainExamStaff>> examStaffMap = new HashMap<>();
+            Map<Long, List<TrExamStaffDto>> examStaffMap = new HashMap<>();
             // todo 批量查询题库信息
-            Map<Long,List<TrExamDepartFile>> fileMap = new HashMap<>();
-            list.forEach(staff -> {
-                deptIds.add(staff.getDepartId());
+            Map<Long, List<TrExamDepartFile>> fileMap = new HashMap<>();
+            list.forEach(examDept -> {
+                deptIds.add(examDept.getDepartId());
             });
-            initExamDepartName(list, deptIds, deptMap);
+            if (!deptIds.isEmpty()) {
+                initExamDepartName(list, deptIds, deptMap);
+                // 查询考试情况
+                deptIds.forEach(deptId -> {
+                    TrainExamStaffQueryCriteria examStaffQueryCriteria = new TrainExamStaffQueryCriteria();
+                    examStaffQueryCriteria.setDepartId(deptId);
+                    List<TrExamStaffDto> examStaffs = examStaffService.queryAll(examStaffQueryCriteria);
+                    examStaffMap.put(deptId, examStaffs);
+                });
+                list.forEach(examDept -> {
+                    examDept.setExamStaffList(examStaffMap.get(examDept.getDepartId()));
+                });
+            }
         }
         return list;
     }
 
     private void initExamDepartName(List<TrainExamDepartDto> list, Set<Long> deptIds, Map<Long, String> deptMap) {
-        if (!deptIds.isEmpty()) {
-            List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
-            deptList.forEach(dept -> {
-                deptMap.put(dept.getId(), dept.getName());
+        List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
+        deptList.forEach(dept -> {
+            deptMap.put(dept.getId(), dept.getName());
+        });
+        if (ValidationUtil.isNotEmpty(deptList)) {
+            list.forEach(dto -> {
+                dto.setDepartName(deptMap.get(dto.getDepartId()));
             });
-            if (ValidationUtil.isNotEmpty(deptList)) {
-                list.forEach(dto -> {
-                    dto.setDepartName(deptMap.get(dto.getDepartId()));
-                });
-            }
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(TrainExamDepart resource) {
-        // todo 校验是否具备权限
+        // 校验是否具备权限
         checkEditAuthorized(resource);
         // 若更改为禁用则需要判断是否存在内容，若存在内容则不允许禁用
-        if(!resource.getEnabled()) {
+        if (!resource.getEnabled()) {
             List<TrainExamStaff> examStaffs = staffRepository.findAllByDepartId(resource.getDepartId());
             List<TrExamDepartFile> examDepartFiles = fileRepository.findByDepartId(resource.getDepartId());
-            if(ValidationUtil.isNotEmpty(examDepartFiles) || ValidationUtil.isNotEmpty(examStaffs)) {
+            if (ValidationUtil.isNotEmpty(examDepartFiles) || ValidationUtil.isNotEmpty(examStaffs)) {
                 throw new BadRequestException("No Valid!抱歉，该部门下存在有效信息，不可禁用！");
             }
         }

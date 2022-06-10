@@ -8,6 +8,7 @@ import me.zhengjie.domain.TimeManagement;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,8 @@ public class TrainExamDepartDto extends BaseDTO implements Serializable {
     private String departName;
 
     private Boolean enabled;
+
+    private List<TrExamStaffDto> examStaffList = new ArrayList<>();
 
 
 

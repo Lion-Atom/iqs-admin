@@ -11,6 +11,7 @@ import me.zhengjie.repository.TrainMaterialFileRepository;
 import me.zhengjie.service.TrainMaterialFileService;
 import me.zhengjie.service.dto.TrainMaterialFileDto;
 import me.zhengjie.service.dto.TrainMaterialFileQueryCriteria;
+import me.zhengjie.service.dto.TrainMaterialQueryByExample;
 import me.zhengjie.service.mapstruct.TrainMaterialFileMapper;
 import me.zhengjie.utils.*;
 import org.springframework.data.domain.Page;
@@ -182,5 +183,11 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
                 throw e;
             }
         }
+    }
+
+    @Override
+    public List<TrainMaterialFile> findByExample(TrainMaterialQueryByExample queryDto) {
+        // todo 批量查询培训材料
+        return null;
     }
 }

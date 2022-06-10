@@ -3,6 +3,7 @@ package me.zhengjie.service;
 import me.zhengjie.domain.TrainMaterialFile;
 import me.zhengjie.service.dto.TrainMaterialFileDto;
 import me.zhengjie.service.dto.TrainMaterialFileQueryCriteria;
+import me.zhengjie.service.dto.TrainMaterialQueryByExample;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +47,7 @@ public interface TrainMaterialFileService {
 
     void download(List<TrainMaterialFileDto> queryAll, HttpServletResponse response) throws IOException;
 
-
     void updateFile(Long id, String name, Long departId, String author, String version, Boolean isInternal, String toolType, String fileDesc, Boolean enabled, MultipartFile file);
+
+    List<TrainMaterialFile> findByExample(TrainMaterialQueryByExample queryDto);
 }

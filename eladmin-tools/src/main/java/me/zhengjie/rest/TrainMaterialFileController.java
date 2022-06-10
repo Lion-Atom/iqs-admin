@@ -23,6 +23,7 @@ import me.zhengjie.domain.TrainMaterialFile;
 import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.TrainMaterialFileService;
 import me.zhengjie.service.dto.TrainMaterialFileQueryCriteria;
+import me.zhengjie.service.dto.TrainMaterialQueryByExample;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +60,14 @@ public class TrainMaterialFileController {
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> query(TrainMaterialFileQueryCriteria criteria, Pageable pageable) {
         return new ResponseEntity<>(fileService.query(criteria,pageable), HttpStatus.OK);
+    }
+
+    @Log("上传培训材料信息")
+    @ApiOperation("上传培训材料信息")
+    @PostMapping("/getByExample")
+    @PreAuthorize("@el.check('train:list')")
+    public ResponseEntity<Object> queryByExample(@RequestBody TrainMaterialQueryByExample queryDto) {
+        return new ResponseEntity<>(fileService.findByExample(queryDto), HttpStatus.OK);
     }
 
     @Log("上传培训材料信息")
