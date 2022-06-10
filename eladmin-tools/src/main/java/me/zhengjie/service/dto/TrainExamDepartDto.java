@@ -28,4 +28,5 @@ public class TrainExamDepartDto extends BaseDTO implements Serializable {
     private Boolean enabled;
 
 
+
 }

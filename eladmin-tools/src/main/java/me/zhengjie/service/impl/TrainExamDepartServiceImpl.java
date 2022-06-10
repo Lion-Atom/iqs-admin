@@ -46,6 +46,10 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
             list = examDepartMapper.toDto(examDeparts);
+            // todo 批量查询考试信息
+            Map<Long,List<TrainExamStaff>> examStaffMap = new HashMap<>();
+            // todo 批量查询题库信息
+            Map<Long,List<TrExamDepartFile>> fileMap = new HashMap<>();
             list.forEach(staff -> {
                 deptIds.add(staff.getDepartId());
             });

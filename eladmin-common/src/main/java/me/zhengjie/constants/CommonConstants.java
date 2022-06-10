@@ -793,7 +793,7 @@ public class CommonConstants {
     /**
      * 培训提示类型-认证
      */
-    public static final String TRAIN_TIP_TYPE_CERTIFICATION = "证书";
+    public static final String TRAIN_TIP_TYPE_CERTIFICATION = "培训证书";
 
     /**
      * 培训提示类型-日程安排
@@ -830,6 +830,7 @@ public class CommonConstants {
         STAFF_CER_TYPE_LIST.add("三方机构证明");
     }
 
+    public static final String STAFF_CER_TYPE_JOB = "在职上岗证";
     /**
      * 仪器状态 - 报废
      */

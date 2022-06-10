@@ -68,6 +68,8 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private Boolean isExam;
 
+    private Boolean isCert;
+
     private Timestamp newTrainTime;
 
     private String delayDesc;

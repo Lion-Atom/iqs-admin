@@ -109,6 +109,10 @@ public class TrainSchedule extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "是否需要考试")
     private Boolean isExam;
 
+    @NotNull
+    @ApiModelProperty(value = "是否发证")
+    private Boolean isCert;
+
     //    @JoinColumn(name = "train_schedule_id")
 //    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 //    private Set<ScheduleBindingDept> bindDepts;

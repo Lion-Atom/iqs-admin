@@ -64,6 +64,8 @@ public class TestTask {
     private final TrainTipRepository trainTipRepository;
     private final EquipmentRepository equipRepository;
     private final InstrumentRepository instrumentRepository;
+    private final TrainNewStaffRepository staffTrainRepository;
+    private final TrainExamStaffRepository examStaffRepository;
 
     public void run() {
         log.info("run 执行成功");
@@ -339,6 +341,9 @@ public class TestTask {
         List<TrainSchedule> schedules = trainScheduleRepository.findAll();
         if (ValidationUtil.isNotEmpty(schedules)) {
             schedules.forEach(schedule -> {
+                List<TrainExamStaff> examStaffs = examStaffRepository.findAllByTrScheduleId(schedule.getId());
+                List<TrainNewStaff> staffs = staffTrainRepository.findAllByTrScheduleId(schedule.getId());
+                List<TrainNewStaff> disFinishedStaffs = new ArrayList<>();
                 long time = 0L;
                 if (schedule.getIsDelay()) {
                     time = schedule.getNewTrainTime().getTime();
@@ -349,7 +354,34 @@ public class TestTask {
                 long current = System.currentTimeMillis();//当前时间毫秒数
                 // 下次校准时间超出，判定为超时未校准
                 if (time < current) {
+                    // 初次改变
                     schedule.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_CLOSED);
+                    // 关闭后更改考试信息和员工培训记录信息
+                    if (schedule.getIsExam()) {
+                        if (ValidationUtil.isNotEmpty(examStaffs)) {
+                            examStaffs.forEach(exam -> {
+                                exam.setIsAuthorize(true);
+                            });
+                            examStaffRepository.saveAll(examStaffs);
+                            // 判断是否要同步更改员工信息的未完成原因
+                            if (ValidationUtil.isNotEmpty(staffs)) {
+                                staffs.forEach(staff -> {
+                                    if (!staff.getIsFinished()) {
+                                        staff.setReason("尚未通过考试");
+                                        disFinishedStaffs.add(staff);
+                                    }
+                                });
+                                staffTrainRepository.saveAll(disFinishedStaffs);
+                            }
+                        }
+                    } else {
+                        if (ValidationUtil.isNotEmpty(staffs)) {
+                            staffs.forEach(staff -> {
+                                staff.setIsAuthorize(true);
+                            });
+                            staffTrainRepository.saveAll(staffs);
+                        }
+                    }
                 } else {
                     schedule.setScheduleStatus(CommonConstants.SCHEDULE_STATUS_OPENED);
                 }

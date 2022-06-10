@@ -74,7 +74,7 @@ public class TrainNewStaff extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "工号")
     private String jobNum;
 
-//    @NotBlank
+    //    @NotBlank
     @ApiModelProperty(value = "岗位")
     private String jobName;
 
@@ -94,4 +94,7 @@ public class TrainNewStaff extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "未完成培训原因")
     private String reason;
 
+    @NotNull
+    @ApiModelProperty(value = "允许操作")
+    private Boolean isAuthorize;
 }

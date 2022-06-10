@@ -42,12 +42,15 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     public List<TrainParticipantDto> getByTrScheduleId(Long trScheduleId) {
         List<TrainParticipantDto> list = new ArrayList<>();
         List<TrainParticipant> trParts = trParticipantRepository.findAllByTrScheduleId(trScheduleId);
+        TrainSchedule schedule = trScheduleRepository.findById(trScheduleId).orElseGet(TrainSchedule::new);
+        ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", trScheduleId);
         if (ValidationUtil.isNotEmpty(trParts)) {
             list = trParticipantMapper.toDto(trParts);
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
             list.forEach(part -> {
                 deptIds.add(part.getParticipantDepart());
+                part.setIsExam(schedule.getIsExam());
             });
             List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
             if (ValidationUtil.isNotEmpty(deptList)) {
@@ -71,7 +74,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
         if (diff < 1) {
             throw new BadRequestException("当前【" + schedule.getTrainTitle() + "】已满员，请勿添加！");
         }
-        TrainParticipant participant = trParticipantRepository.findByDepartIdAndPartName(resource.getParticipantDepart(), resource.getParticipantName());
+        TrainParticipant participant = trParticipantRepository.findByTrScheduleIdAndDepartIdAndPartName(schedule.getId(), resource.getParticipantDepart(), resource.getParticipantName());
         if (participant != null) {
             throw new EntityExistException(TrainParticipant.class, "participantName", resource.getParticipantName());
         }
@@ -120,7 +123,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             if (diff < 1) {
                 throw new BadRequestException("当前【" + schedule.getTrainTitle() + "】已满员，请勿添加！");
             } else {
-                TrainParticipant participant = trParticipantRepository.findByDepartIdAndPartName(resource.getParticipantDepart(), resource.getParticipantName());
+                TrainParticipant participant = trParticipantRepository.findByTrScheduleIdAndDepartIdAndPartName(schedule.getId(), resource.getParticipantDepart(), resource.getParticipantName());
                 if (participant != null && !participant.getId().equals(resource.getId())) {
                     throw new EntityExistException(TrainParticipant.class, "participantName", resource.getParticipantName());
                 }
@@ -157,7 +160,12 @@ public class TrParticipantServiceImpl implements TrParticipantService {
         staff.setTeam(userDto.getTeam());
         staff.setJobNum(userDto.getJobNum());
         staff.setIsFinished(false);
-        staff.setReason("培训尚未结束");
+        if(schedule.getIsExam()) {
+            staff.setReason("培训尚未开始，待考试");
+        } else {
+            staff.setReason("培训尚未开始");
+        }
+        staff.setIsAuthorize(false);
         staffRepository.save(staff);
     }
 
@@ -175,6 +183,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
         examStaff.setTeam(userDto.getTeam());
         examStaff.setStaffName(resource.getParticipantName());
         examStaff.setTrScheduleId(schedule.getId());
+        examStaff.setIsAuthorize(false);
         examStaffRepository.save(examStaff);
     }
 

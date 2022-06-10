@@ -43,6 +43,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private final TrainExamStaffRepository examStaffRepository;
     private final ToolsUserRepository toolsUserRepository;
     private final ToolsUserMapper toolsUserMapper;
+    private final TrainCertificationRepository certificationRepository;
 
     @Override
     public List<TrainScheduleDto> queryAll(TrainScheduleQueryCriteria criteria) {
@@ -148,19 +149,19 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         TrainSchedule schedule = scheduleRepository.findById(resource.getId()).orElseGet(TrainSchedule::new);
         ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", resource.getId());
         //  先判断是否需要同步考试数据,依据：是否考试标志发生变化
-        if (!resource.getIsExam().equals(schedule.getIsExam())) {
-            List<TrainParticipant> parts = participantRepository.findAllByTrScheduleIdAndIsValid(schedule.getId(),true);
+        if (resource.getIsExam() && !schedule.getIsExam()) {
+            List<TrainParticipant> parts = participantRepository.findAllByTrScheduleIdAndIsValid(schedule.getId(), true);
             if (ValidationUtil.isNotEmpty(parts)) {
-                if (resource.getIsExam()) {
-                    // 若更改为需要考试则需要自动生成考试信息
-                    parts.forEach(part->{
-                        initExamInfo(part, schedule);
-                    });
-                } else {
-                    // 若更改为不需要考试则自动删除已有考试
-                    examStaffRepository.deleteAllByTrScheduleId(resource.getId());
-                }
+                // 若更改为需要考试则需要自动生成考试信息
+                parts.forEach(part -> {
+                    initExamInfo(part, schedule);
+                });
             }
+        } else if (!resource.getIsExam() && schedule.getIsExam()) {
+            // 若更改为不需要考试则自动删除已有考试记录
+            examStaffRepository.deleteAllByTrScheduleId(resource.getId());
+            // 若更改为不需要考试则自动删除已有证书记录
+            certificationRepository.deleteAllByTrScheduleId(resource.getId());
         }
         scheduleRepository.save(resource);
     }
@@ -199,6 +200,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         examStaff.setTeam(userDto.getTeam());
         examStaff.setStaffName(resource.getParticipantName());
         examStaff.setTrScheduleId(schedule.getId());
+        examStaff.setIsAuthorize(false);
         examStaffRepository.save(examStaff);
     }
 
@@ -301,5 +303,9 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         scheduleRepository.deleteAllByIdIn(ids);
         // 删除参与者信息
         participantRepository.deleteAllByTrScheduleIdIn(ids);
+        // 删除考生考试信息
+        examStaffRepository.deleteAllByTrScheduleIdIn(ids);
+        // todo 删除用户认证信息
+
     }
 }

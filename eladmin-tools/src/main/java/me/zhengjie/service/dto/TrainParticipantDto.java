@@ -33,6 +33,8 @@ public class TrainParticipantDto extends BaseDTO implements Serializable {
 
     private Long trScheduleId;
 
+    private Boolean isExam;
+
     private Long participantDepart;
 
     private String participantDepartName;

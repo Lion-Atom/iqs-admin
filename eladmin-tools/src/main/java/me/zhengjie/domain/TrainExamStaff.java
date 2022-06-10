@@ -71,4 +71,8 @@ public class TrainExamStaff extends BaseEntity implements Serializable {
     @Column(name = "train_schedule_id")
     @ApiModelProperty(value = "培训计划ID")
     private Long trScheduleId;
+
+    @NotNull
+    @ApiModelProperty(value = "允许操作")
+    private Boolean isAuthorize;
 }

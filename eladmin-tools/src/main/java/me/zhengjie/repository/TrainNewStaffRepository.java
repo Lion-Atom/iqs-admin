@@ -56,4 +56,11 @@ public interface TrainNewStaffRepository extends JpaRepository<TrainNewStaff, Lo
      */
     @Query(value = "select * from train_new_staff where depart_id = ?1 and train_schedule_id = ?2 and staff_name = ?3 ", nativeQuery = true)
     TrainNewStaff findAllByDepartIdAndTrScheduleIdAndStaffName(Long departId, Long trScheduleId, String staffName);
+
+    /**
+     * @param trScheduleId 培训计划ID
+     * @return 员工培训信息列表
+     */
+    @Query(value = "select * from train_new_staff where train_schedule_id = ?1", nativeQuery = true)
+    List<TrainNewStaff> findAllByTrScheduleId(Long trScheduleId);
 }

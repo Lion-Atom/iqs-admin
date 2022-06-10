@@ -52,6 +52,12 @@ public class TrainCertificationDto extends BaseDTO implements Serializable {
 
     private String certificationType;
 
+    private Long trScheduleId;
+
+    private String trainTitle;
+
+    private String scheduleStatus;
+
     private String jobType;
 
     private String orgName;

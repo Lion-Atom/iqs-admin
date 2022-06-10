@@ -69,6 +69,10 @@ public class TrainCertification extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "认证证件种类")
     private String certificationType;
 
+    @Column(name = "train_schedule_id")
+    @ApiModelProperty(value = "培训计划ID")
+    private Long trScheduleId;
+
 //    @NotBlank
     @ApiModelProperty(value = "工种类型")
     private String jobType;
@@ -76,7 +80,6 @@ public class TrainCertification extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "签发机构")
     private String orgName;
 
-    @NotNull
     @ApiModelProperty(value = "到期日期")
     private Timestamp dueDate;
 

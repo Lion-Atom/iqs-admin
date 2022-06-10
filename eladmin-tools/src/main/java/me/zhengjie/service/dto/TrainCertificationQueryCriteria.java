@@ -44,6 +44,9 @@ public class TrainCertificationQueryCriteria {
     private String certificationType;
 
     @Query
+    private Long trScheduleId;
+
+    @Query
     private String jobType;
 
     @Query(type = Query.Type.BETWEEN)

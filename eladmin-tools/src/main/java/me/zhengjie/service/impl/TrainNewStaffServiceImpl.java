@@ -69,6 +69,7 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
                     dto.setTrainTitle(scheduleMap.get(dto.getTrScheduleId()).getTrainTitle());
                     dto.setTrainTime(scheduleMap.get(dto.getTrScheduleId()).getTrainTime());
                     dto.setScheduleStatus(scheduleMap.get(dto.getTrScheduleId()).getScheduleStatus());
+                    dto.setIsExam(scheduleMap.get(dto.getTrScheduleId()).getIsExam());
                 });
             }
         }

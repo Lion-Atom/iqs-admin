@@ -44,6 +44,9 @@ public class TrainNewStaffQueryCriteria {
     private String staffType;
 
     @Query
+    private Long trScheduleId;
+
+    @Query
     private Boolean isFinished;
 
     @Query(type = Query.Type.BETWEEN)

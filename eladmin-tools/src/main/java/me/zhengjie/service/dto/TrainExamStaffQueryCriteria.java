@@ -32,11 +32,14 @@ import java.util.Set;
 @NoArgsConstructor
 public class TrainExamStaffQueryCriteria {
 
-    @Query(blurry = "staffName,jobName,jobType,workshop")
+    @Query(blurry = "staffName,jobName,jobNum,jobType,workshop")
     private String blurry;
 
     @Query(propName = "departId", type = Query.Type.EQUAL)
     private Long departId;
+
+    @Query
+    private Long trScheduleId;
 
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> createTime;

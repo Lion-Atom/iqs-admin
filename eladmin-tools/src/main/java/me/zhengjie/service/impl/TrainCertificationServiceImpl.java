@@ -126,8 +126,13 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
     public void update(TrainCertification resource) {
         TrainCertification entity = certificationRepository.findById(resource.getId()).orElseGet(TrainCertification::new);
         ValidationUtil.isNull(entity.getId(), "TrainCertification", "id", resource.getId());
-        TrainCertification staff = certificationRepository.findAllByStaffName(resource.getStaffName());
-        if (staff != null && !staff.getId().equals(resource.getId())) {
+        TrainCertification trainCertification = null;
+        if (resource.getJobType() != null && CommonConstants.STAFF_CER_TYPE_LIST.contains(resource.getCertificationType())) {
+            trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndStaffName(resource.getCertificationType(), resource.getJobType(), resource.getStaffName());
+        } else if (resource.getTrScheduleId() != null && resource.getCertificationType().equals(CommonConstants.STAFF_CER_TYPE_JOB)) {
+            trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndStaffName(resource.getCertificationType(), resource.getTrScheduleId(), resource.getStaffName());
+        }
+        if (trainCertification != null && !trainCertification.getId().equals(resource.getId())) {
             throw new EntityExistException(TrainCertification.class, "staffName", resource.getStaffName());
         }
         if (entity.getIsRemind() == null || !entity.getIsRemind()) {
@@ -140,7 +145,12 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(TrainCertificationDto dto) {
-        TrainCertification trainCertification = certificationRepository.findAllByStaffName(dto.getStaffName());
+        TrainCertification trainCertification = null;
+        if (dto.getJobType() != null && CommonConstants.STAFF_CER_TYPE_LIST.contains(dto.getCertificationType())) {
+            trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndStaffName(dto.getCertificationType(), dto.getJobType(), dto.getStaffName());
+        } else if (dto.getTrScheduleId() != null && dto.getCertificationType().equals(CommonConstants.STAFF_CER_TYPE_JOB)) {
+            trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndStaffName(dto.getCertificationType(), dto.getTrScheduleId(), dto.getStaffName());
+        }
         if (trainCertification != null) {
             throw new EntityExistException(TrainCertification.class, "staffName", dto.getStaffName());
         }
@@ -149,6 +159,7 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         }
         TrainCertification resource = certificationMapper.toEntity(dto);
         judgeCerStatus(resource);
+        // todo 考试与证书关联
         TrainCertification certification = certificationRepository.save(resource);
         // 文件列表
         if (ValidationUtil.isNotEmpty(dto.getFileList())) {

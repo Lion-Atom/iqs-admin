@@ -58,9 +58,25 @@ public interface TrainExamStaffRepository extends JpaRepository<TrainExamStaff, 
     void deleteAllByTrScheduleId(Long trScheduleId);
 
     /**
+     * 删除培训计划下考试信息
+     *
+     * @param trScheduleIds 培训计划IDs
+     */
+    @Modifying
+    @Query(value = "delete from train_exam_staff where train_schedule_id in ?1", nativeQuery = true)
+    void deleteAllByTrScheduleIdIn(Set<Long> trScheduleIds);
+
+    /**
      * @param departId 部门ID
      * @return 新员工集合
      */
     @Query(value = "select * from train_exam_staff where depart_id = ?1", nativeQuery = true)
     List<TrainExamStaff> findAllByDepartId(Long departId);
+
+    /**
+     * @param trScheduleId 培训计划ID
+     * @return 新员工集合
+     */
+    @Query(value = "select * from train_exam_staff where train_schedule_id = ?1", nativeQuery = true)
+    List<TrainExamStaff> findAllByTrScheduleId(Long trScheduleId);
 }

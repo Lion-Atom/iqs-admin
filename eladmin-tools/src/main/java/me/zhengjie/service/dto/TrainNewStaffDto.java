@@ -63,6 +63,8 @@ public class TrainNewStaffDto extends BaseDTO implements Serializable {
 
     private Timestamp trainTime;
 
+    private Boolean isExam;
+
     private String trainTitle;
 
     private String trainContent;
@@ -72,6 +74,8 @@ public class TrainNewStaffDto extends BaseDTO implements Serializable {
     private Boolean isFinished;
 
     private String reason;
+
+    private Boolean isAuthorize;
 
     private List<TrNewStaffFile> fileList = new ArrayList<>();
 }
