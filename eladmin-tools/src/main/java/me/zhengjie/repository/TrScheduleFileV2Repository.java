@@ -15,7 +15,7 @@
  */
 package me.zhengjie.repository;
 
-import me.zhengjie.domain.TrScheduleFile;
+import me.zhengjie.domain.TrScheduleFileV2;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,21 +30,21 @@ import java.util.Set;
  * @date 2022-05-18
  */
 @Repository
-public interface TrScheduleFileRepository extends JpaRepository<TrScheduleFile, Long>, JpaSpecificationExecutor<TrScheduleFile> {
+public interface TrScheduleFileV2Repository extends JpaRepository<TrScheduleFileV2, Long>, JpaSpecificationExecutor<TrScheduleFileV2> {
 
     /**
-     * 根据培训计划ids删除附件信息
+     * 根据培训日程安排ids删除附件信息
      *
-     * @param trScheduleIds 培训计划ID
+     * @param trScheduleIds 培训日程安排ID
      */
     @Modifying
     @Query(value = " delete from train_schedule_file where train_schedule_id in ?1 ", nativeQuery = true)
     void deleteByTrScheduleIdIn(Set<Long> trScheduleIds);
 
     /**
-     * 根据培训计划id删除附件信息
+     * 根据培训日程安排id删除附件信息
      *
-     * @param trScheduleId 培训计划id
+     * @param trScheduleId 培训日程安排id
      */
     @Modifying
     @Query(value = " delete from train_schedule_file where train_schedule_id = ?1 ", nativeQuery = true)
@@ -58,19 +58,11 @@ public interface TrScheduleFileRepository extends JpaRepository<TrScheduleFile, 
     void deleteAllByIdIn(Set<Long> ids);
 
     /**
-     * 根据培训计划id查询相关附件
+     * 根据培训日程安排id查询相关附件
      *
-     * @param trScheduleId 培训计划id
-     * @return 培训计划附件信息列表
+     * @param trScheduleId 培训日程安排id
+     * @return 培训日程安排附件信息列表
      */
     @Query(value = " select * from train_schedule_file where train_schedule_id = ?1 order by file_type ", nativeQuery = true)
-    List<TrScheduleFile> findByTrScheduleId(Long trScheduleId);
-
-    /**
-     * @param trScheduleId  培训计划ID
-     * @param fileType 文件类型
-     * @return /
-     */
-    @Query(value = " select * from train_schedule_file where train_schedule_id = ?1 and file_type =?2 order by file_type ", nativeQuery = true)
-    List<TrScheduleFile> findByTrScheduleIdAndType(Long trScheduleId, String fileType);
+    List<TrScheduleFileV2> findByTrScheduleId(Long trScheduleId);
 }

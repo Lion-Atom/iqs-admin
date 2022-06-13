@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -68,6 +69,17 @@ public class TrExamDepartFileController {
     public ResponseEntity<Object> uploadFile(@RequestParam("departId") Long departId, @RequestParam("name") String name, @RequestParam("enabled") Boolean enabled,
                                              @RequestParam("fileDesc") String fileDesc, @RequestParam("file") MultipartFile file) {
         fileService.uploadFile(departId, name, enabled, fileDesc, file);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Deprecated
+    @Log("上传培训考试题库")
+    @ApiOperation("上传培训考试题库")
+    @PostMapping(value = "/uploadScheduleFile")
+    @PreAuthorize("@el.check('exam:edit')")
+    public ResponseEntity<Object> uploadFile(@RequestParam("trScheduleId") Long trScheduleId,@RequestParam("departIds") Set<Long> departIds, @RequestParam("name") String name, @RequestParam("enabled") Boolean enabled,
+                                             @RequestParam("fileDesc") String fileDesc, @RequestParam("file") MultipartFile file) {
+        fileService.uploadScheduleFile(trScheduleId,departIds, name, enabled, fileDesc, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

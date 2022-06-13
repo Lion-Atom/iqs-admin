@@ -100,6 +100,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
                     });
                     schedule.setBindDeptStr(StringUtils.join(deptNames, ","));
                 }
+                schedule.setFileScopeTags(Arrays.asList(schedule.getFileScope().split(",")));
                 List<TrainParticipant> parts = participantRepository.findAllByTrScheduleId(schedule.getId());
                 List<TrainParticipantDto> partList = trParticipantMapper.toDto(parts);
                 if (ValidationUtil.isNotEmpty(partList)) {
@@ -262,11 +263,20 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         // 添加涉及部门
 //        initScheduleBindDepts(newSchedule, resource.getBindDepts());
         // 文件列表
-        if (ValidationUtil.isNotEmpty(resource.getFileList())) {
-            resource.getFileList().forEach(file -> {
+        if (ValidationUtil.isNotEmpty(resource.getMaterialFileList())) {
+            resource.getMaterialFileList().forEach(file -> {
                 file.setTrScheduleId(newSchedule.getId());
             });
-            fileRepository.saveAll(resource.getFileList());
+            fileRepository.saveAll(resource.getMaterialFileList());
+            // todo 同步培训材料
+
+        }
+        if (ValidationUtil.isNotEmpty(resource.getExamFileList())) {
+            resource.getExamFileList().forEach(file -> {
+                file.setTrScheduleId(newSchedule.getId());
+            });
+            fileRepository.saveAll(resource.getExamFileList());
+            // todo 同步培训题库
         }
     }
 

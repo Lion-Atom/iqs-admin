@@ -113,9 +113,10 @@ public class TrainSchedule extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "是否发证")
     private Boolean isCert;
 
-    //    @JoinColumn(name = "train_schedule_id")
-//    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-//    private Set<ScheduleBindingDept> bindDepts;
+    @NotBlank
+    @ApiModelProperty(value = "附件范围")
+    private String fileScope;
+
     @ManyToMany
     @ApiModelProperty(value = "涉及部门")
     @JoinTable(name = "tool_schedule_dept",

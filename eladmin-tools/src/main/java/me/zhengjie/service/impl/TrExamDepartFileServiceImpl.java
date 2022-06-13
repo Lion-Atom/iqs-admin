@@ -6,9 +6,11 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.config.FileProperties;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrExamDepartFile;
+import me.zhengjie.domain.TrScheduleFile;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrExamDepartFileRepository;
+import me.zhengjie.repository.TrScheduleFileRepository;
 import me.zhengjie.repository.TrainExamDepartRepository;
 import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.dto.TrExamDepartFileDto;
@@ -41,6 +43,7 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
     private final TrExamDepartFileMapper departFileMapper;
     private final TrExamDepartFileRepository fileRepository;
     private final FileProperties properties;
+    private final TrScheduleFileRepository trScheduleFileRepository;
 
 
     @Override
@@ -163,5 +166,55 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
             list.add(map);
         }
         FileUtil.downloadExcel(list, response);
+    }
+
+    @Override
+    public void uploadScheduleFile(Long trScheduleId, Set<Long> departIds, String name, Boolean enabled, String fileDesc, MultipartFile multipartFile) {
+        FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
+        String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
+        assert suffix != null;
+        String type = FileUtil.getFileType(suffix);
+
+        File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
+        if (ObjectUtil.isNull(file)) {
+            throw new BadRequestException("上传失败");
+        }
+        try {
+            name = StringUtils.isBlank(name) ? FileUtil.getFileNameNoEx(multipartFile.getOriginalFilename()) : name;
+            if (!departIds.isEmpty()) {
+                List<TrExamDepartFile> examFiles = new ArrayList<>();
+                String finalName = name;
+                departIds.forEach(departId -> {
+                    TrExamDepartFile trExamDepartFile = new TrExamDepartFile(
+                            departId,
+                            file.getName(),
+                            finalName,
+                            fileDesc,
+                            suffix,
+                            file.getPath(),
+                            type,
+                            FileUtil.getSize(multipartFile.getSize()),
+                            enabled
+                    );
+                    examFiles.add(trExamDepartFile);
+                });
+                fileRepository.saveAll(examFiles);
+                // todo 同步到培训计划附件
+                TrScheduleFile scheduleFile = new TrScheduleFile(
+                        trScheduleId,
+                        "培训题库",
+                        file.getName(),
+                        name,
+                        suffix,
+                        file.getPath(),
+                        type,
+                        FileUtil.getSize(multipartFile.getSize())
+                );
+                trScheduleFileRepository.save(scheduleFile);
+            }
+        } catch (Exception e) {
+            FileUtil.del(file);
+            throw e;
+        }
     }
 }

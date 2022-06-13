@@ -41,36 +41,36 @@ import java.util.Set;
  */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "工具：培训-日程安排")
+@Api(tags = "工具：培训-计划")
 @RequestMapping("/api/train/schedule")
 public class TrainScheduleController {
 
     private final TrainScheduleService scheduleService;
     private static final String ENTITY_NAME = "TrainSchedule";
 
-    @ApiOperation("导出培训日程安排数据")
+    @ApiOperation("导出培训计划数据")
     @GetMapping(value = "/download")
     @PreAuthorize("@el.check('schedule:list')")
     public void download(HttpServletResponse response, TrainScheduleQueryCriteria criteria) throws IOException {
         scheduleService.download(scheduleService.queryAll(criteria), response);
     }
 
-    @ApiOperation("查询培训日程安排信息")
+    @ApiOperation("查询培训计划信息")
     @GetMapping
     @PreAuthorize("@el.check('schedule:list')")
     public ResponseEntity<Object> query(TrainScheduleQueryCriteria criteria, Pageable pageable) {
         return new ResponseEntity<>(scheduleService.queryAll(criteria, pageable), HttpStatus.OK);
     }
 
-    @ApiOperation("查询单条培训日程安排信息")
+    @ApiOperation("查询单条培训计划信息")
     @GetMapping(value = "/byId")
     @PreAuthorize("@el.check('schedule:list')")
     public ResponseEntity<Object> getById(@RequestParam("id") Long id) {
         return new ResponseEntity<>(scheduleService.findById(id), HttpStatus.OK);
     }
 
-    @Log("新增培训日程安排信息")
-    @ApiOperation("新增培训日程安排信息")
+    @Log("新增培训计划信息")
+    @ApiOperation("新增培训计划信息")
     @PostMapping
     @PreAuthorize("@el.check('schedule:add')")
     public ResponseEntity<Object> create(@Validated @RequestBody TrainScheduleDto resource) {
@@ -81,8 +81,8 @@ public class TrainScheduleController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("修改培训日程安排信息")
-    @ApiOperation("修改培训日程安排信息")
+    @Log("修改培训计划信息")
+    @ApiOperation("修改培训计划信息")
     @PutMapping
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> update(@Validated(TrainSchedule.Update.class) @RequestBody TrainSchedule resource) {
@@ -90,8 +90,8 @@ public class TrainScheduleController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @Log("删除培训日程安排信息")
-    @ApiOperation("删除培训日程安排信息")
+    @Log("删除培训计划信息")
+    @ApiOperation("删除培训计划信息")
     @DeleteMapping
     @PreAuthorize("@el.check('schedule:del')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {

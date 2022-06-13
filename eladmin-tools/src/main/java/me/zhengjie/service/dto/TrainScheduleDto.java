@@ -76,7 +76,13 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
 
     private String scheduleStatus;
 
-    private List<TrScheduleFile> fileList = new ArrayList<>();
+    private String fileScope;
+
+    private List<String> fileScopeTags = new ArrayList<>();
+
+    private List<TrScheduleFile> materialFileList = new ArrayList<>();
+
+    private List<TrScheduleFile> examFileList = new ArrayList<>();
 
     private List<TrainParticipantDto> partList = new ArrayList<>();
 

@@ -35,21 +35,28 @@ import java.util.Set;
  */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "工具：培训日程相关附件")
+@Api(tags = "工具：培训计划相关附件")
 @RequestMapping("/api/trScheduleFile")
 public class TrScheduleFileController {
 
     private final TrScheduleFileService fileService;
 
-    @ApiOperation("查询培训日程相关附件")
+    @ApiOperation("查询培训计划相关附件")
     @GetMapping(value = "/byTrScheduleId")
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> getByTrScheduleId(@RequestParam("trScheduleId") Long trScheduleId) {
         return new ResponseEntity<>(fileService.getByTrScheduleId(trScheduleId), HttpStatus.OK);
     }
+    @ApiOperation("查询培训计划相关附件")
+    @GetMapping(value = "/byTrScheduleIdAndType")
+    @PreAuthorize("@el.check('train:list')")
+    public ResponseEntity<Object> getByTrScheduleIdAndType(@RequestParam("trScheduleId") Long trScheduleId,@RequestParam("fileType") String fileType) {
+        return new ResponseEntity<>(fileService.getByTrScheduleIdAndType(trScheduleId,fileType), HttpStatus.OK);
+    }
 
-    @Log("上传培训日程相关附件")
-    @ApiOperation("上传培训日程相关附件")
+
+    @Log("上传培训计划相关附件")
+    @ApiOperation("上传培训计划相关附件")
     @PostMapping
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> uploadFile(@RequestParam("trScheduleId") Long trScheduleId, @RequestParam("fileType") String fileType, @RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
@@ -57,8 +64,18 @@ public class TrScheduleFileController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("删除培训日程相关附件")
-    @ApiOperation("删除培训日程相关附件")
+    @Log("上传培训材料信息")
+    @ApiOperation("上传培训材料信息")
+    @PostMapping(value = "/uploadV2")
+    @PreAuthorize("@el.check('material:edit')")
+    public ResponseEntity<Object> uploadFile(@RequestParam("name") String name, @RequestParam("trScheduleId") Long trScheduleId, @RequestParam("fileType") String fileType, @RequestParam("author") String author, @RequestParam("isInternal") Boolean isInternal,
+                                             @RequestParam("toolType") String toolType, @RequestParam("fileDesc") String fileDesc, @RequestParam("file") MultipartFile file) {
+        fileService.uploadFileV2(name, trScheduleId, fileType, author, isInternal, toolType, fileDesc, file);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Log("删除培训计划相关附件")
+    @ApiOperation("删除培训计划相关附件")
     @DeleteMapping
     @PreAuthorize("@el.check('schedule:edit')")
     public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {

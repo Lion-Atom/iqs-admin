@@ -60,4 +60,15 @@ public interface TrExamDepartFileService {
     List<TrExamDepartFileDto> queryAll(TrExamDepartFileQueryCriteria criteria);
 
     void download(List<TrExamDepartFileDto> queryAll, HttpServletResponse response) throws IOException;
+
+
+    /**
+     * @param departIds    部门IDS
+     * @param trScheduleId 培训计划ID
+     * @param name         文件名称
+     * @param enabled      是否启用
+     * @param fileDesc     文件描述
+     * @param file         文件内容
+     */
+    void uploadScheduleFile(Long trScheduleId, Set<Long> departIds, String name, Boolean enabled, String fileDesc, MultipartFile file);
 }
