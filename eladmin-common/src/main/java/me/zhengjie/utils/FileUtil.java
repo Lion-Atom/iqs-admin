@@ -261,7 +261,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     }
 
     public static String getFileType(String type) {
-        String documents = "txt doc pdf ppt pps xlsx xls docx";
+        String documents = "txt doc pdf ppt pps xlsx xls docx xlsm";
         String music = "mp3 wav wma mpa ram ra aac aif m4a";
         String video = "avi mpg mpe mpeg asf wmv mov qt rm mp4 flv m4v webm ogv ogg";
         String image = "bmp dib pcp dif wmf gif jpg tif eps psd cdr iff tga pcd mpt png jpeg";

@@ -49,6 +49,10 @@ public class TrScheduleFileV2 extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "培训日程安排ID")
     private Long trScheduleId;
 
+    @Column(name = "binding_id")
+    @ApiModelProperty(value = "绑定ID")
+    private Long bindingId;
+
     @ApiModelProperty(value = "作者")
     private String author;
 
@@ -60,6 +64,9 @@ public class TrScheduleFileV2 extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "文件类型")
     private String fileType;
+
+    @ApiModelProperty(value = "文件出处")
+    private String fileSource;
 
     @ApiModelProperty(value = "真实文件名")
     private String realName;
@@ -79,13 +86,15 @@ public class TrScheduleFileV2 extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "大小")
     private String size;
 
-    public TrScheduleFileV2(Long trScheduleId, String author, Boolean isInternal, String toolType,
-                            String fileType, String realName, String name, String suffix, String path, String type, String size) {
+    public TrScheduleFileV2(Long trScheduleId, Long bindingId, String author, Boolean isInternal, String toolType,
+                            String fileType, String fileSource, String realName, String name, String suffix, String path, String type, String size) {
         this.trScheduleId = trScheduleId;
+        this.bindingId = bindingId;
         this.author = author;
         this.isInternal = isInternal;
         this.toolType = toolType;
         this.fileType = fileType;
+        this.fileSource = fileSource;
         this.realName = realName;
         this.name = name;
         this.suffix = suffix;

@@ -30,6 +30,6 @@ public class TrainExamDepartDto extends BaseDTO implements Serializable {
 
     private List<TrExamStaffDto> examStaffList = new ArrayList<>();
 
-
+    private List<TrExamDepartFileDto> examDepartFileList = new ArrayList<>();
 
 }

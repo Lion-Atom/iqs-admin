@@ -62,9 +62,9 @@ public class TrainMaterialFileController {
         return new ResponseEntity<>(fileService.query(criteria,pageable), HttpStatus.OK);
     }
 
-    @Log("上传培训材料信息")
-    @ApiOperation("上传培训材料信息")
-    @PostMapping("/getByExample")
+    @Log("查询指定部门下培训材料信息")
+    @ApiOperation("查询指定部门下培训材料信息")
+    @PostMapping("/byExample")
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> queryByExample(@RequestBody TrainMaterialQueryByExample queryDto) {
         return new ResponseEntity<>(fileService.findByExample(queryDto), HttpStatus.OK);

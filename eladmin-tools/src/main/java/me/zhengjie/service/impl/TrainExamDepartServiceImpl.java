@@ -11,12 +11,10 @@ import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrExamDepartFileRepository;
 import me.zhengjie.repository.TrainExamDepartRepository;
 import me.zhengjie.repository.TrainExamStaffRepository;
+import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.TrainExamDepartService;
 import me.zhengjie.service.TrainExamStaffService;
-import me.zhengjie.service.dto.TrExamStaffDto;
-import me.zhengjie.service.dto.TrainExamDepartDto;
-import me.zhengjie.service.dto.TrainExamDepartQueryCriteria;
-import me.zhengjie.service.dto.TrainExamStaffQueryCriteria;
+import me.zhengjie.service.dto.*;
 import me.zhengjie.service.mapstruct.TrExamDepartMapper;
 import me.zhengjie.utils.QueryHelp;
 import me.zhengjie.utils.SecurityUtils;
@@ -41,6 +39,7 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
     private final TrExamDepartFileRepository fileRepository;
     private final TrainExamStaffRepository staffRepository;
     private final TrainExamStaffService examStaffService;
+    private final TrExamDepartFileService examDepartFileService;
 
     @Override
     public List<TrainExamDepartDto> queryAll(TrainExamDepartQueryCriteria criteria) {
@@ -50,24 +49,32 @@ public class TrainExamDepartServiceImpl implements TrainExamDepartService {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
             list = examDepartMapper.toDto(examDeparts);
-            // todo 批量查询考试信息
+            // 批量查询考试信息
             Map<Long, List<TrExamStaffDto>> examStaffMap = new HashMap<>();
-            // todo 批量查询题库信息
-            Map<Long, List<TrExamDepartFile>> fileMap = new HashMap<>();
+            // 批量查询题库信息
+            Map<Long, List<TrExamDepartFileDto>> fileMap = new HashMap<>();
             list.forEach(examDept -> {
                 deptIds.add(examDept.getDepartId());
             });
             if (!deptIds.isEmpty()) {
                 initExamDepartName(list, deptIds, deptMap);
-                // 查询考试情况
+                // 查询考试和题库情况
                 deptIds.forEach(deptId -> {
+                    // 查询考试信息
                     TrainExamStaffQueryCriteria examStaffQueryCriteria = new TrainExamStaffQueryCriteria();
                     examStaffQueryCriteria.setDepartId(deptId);
                     List<TrExamStaffDto> examStaffs = examStaffService.queryAll(examStaffQueryCriteria);
                     examStaffMap.put(deptId, examStaffs);
+                    // 查询题库信息
+                    TrExamDepartFileQueryCriteria examDepartFileQueryCriteria = new TrExamDepartFileQueryCriteria();
+                    examDepartFileQueryCriteria.setDepartId(deptId);
+                    List<TrExamDepartFileDto> examDepartFiles = examDepartFileService.queryAll(examDepartFileQueryCriteria);
+                    fileMap.put(deptId, examDepartFiles);
                 });
+                // 装载考试和题库信息
                 list.forEach(examDept -> {
                     examDept.setExamStaffList(examStaffMap.get(examDept.getDepartId()));
+                    examDept.setExamDepartFileList(fileMap.get(examDept.getDepartId()));
                 });
             }
         }

@@ -31,4 +31,7 @@ public interface TrainMaterialFileRepository extends JpaRepository<TrainMaterial
      * @param ids /
      */
     void deleteAllByIdIn(Set<Long> ids);
+
+    @Query(value = "select * from train_material_file where train_material_file_id in ?1 ", nativeQuery = true)
+    List<TrainMaterialFile> findByIdIn(Set<Long> trMaterialFileIds);
 }

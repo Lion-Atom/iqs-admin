@@ -831,9 +831,30 @@ public class CommonConstants {
     }
 
     public static final String STAFF_CER_TYPE_JOB = "在职上岗证";
+
     /**
      * 仪器状态 - 报废
      */
     public static final String INSTRUMENT_STATUS_DROP = "报废";
+
+    /**
+     * 培训计划附件来源-已有
+     */
+    public static final String TRAIN_SCHEDULE_FILE_SOURCE_SELECTED = "现有";
+
+    /**
+     * 培训计划附件来源-新增
+     */
+    public static final String TRAIN_SCHEDULE_FILE_SOURCE_ADD = "新增";
+
+    /**
+     * 培训计划附件类型-培训材料
+     */
+    public static final String TRAIN_SCHEDULE_FILE_TYPE_MATERIAL = "培训材料";
+
+    /**
+     * 培训计划附件类型-培训材料
+     */
+    public static final String TRAIN_SCHEDULE_FILE_TYPE_EXAM = "培训试题";
 
 }

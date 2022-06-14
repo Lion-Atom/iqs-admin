@@ -188,6 +188,6 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
     @Override
     public List<TrainMaterialFile> findByExample(TrainMaterialQueryByExample queryDto) {
         // todo 批量查询培训材料
-        return null;
+        return materialFileRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, queryDto, criteriaBuilder));
     }
 }

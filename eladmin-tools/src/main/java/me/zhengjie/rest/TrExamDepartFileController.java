@@ -23,6 +23,8 @@ import me.zhengjie.domain.TrExamDepartFile;
 import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.TrNewStaffFileService;
 import me.zhengjie.service.dto.TrExamDepartFileQueryCriteria;
+import me.zhengjie.service.dto.TrainExamFileQueryByExample;
+import me.zhengjie.service.dto.TrainMaterialQueryByExample;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +62,14 @@ public class TrExamDepartFileController {
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> query(TrExamDepartFileQueryCriteria criteria, Pageable pageable) {
         return new ResponseEntity<>(fileService.query(criteria, pageable), HttpStatus.OK);
+    }
+
+    @Log("查询指定部门下培训材料信息")
+    @ApiOperation("查询指定部门下培训材料信息")
+    @PostMapping("/byExample")
+    @PreAuthorize("@el.check('train:list')")
+    public ResponseEntity<Object> queryByExample(@RequestBody TrainExamFileQueryByExample queryDto) {
+        return new ResponseEntity<>(fileService.findByExample(queryDto), HttpStatus.OK);
     }
 
     @Log("上传部门考试题库")

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.service.TrNewStaffFileService;
 import me.zhengjie.service.TrScheduleFileService;
+import me.zhengjie.service.dto.TrainMaterialSyncDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -64,13 +65,23 @@ public class TrScheduleFileController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Log("上传培训材料信息")
-    @ApiOperation("上传培训材料信息")
+    @Log("上传培训材料信息V2")
+    @ApiOperation("上传培训材料信息V2")
     @PostMapping(value = "/uploadV2")
     @PreAuthorize("@el.check('material:edit')")
-    public ResponseEntity<Object> uploadFile(@RequestParam("name") String name, @RequestParam("trScheduleId") Long trScheduleId, @RequestParam("fileType") String fileType, @RequestParam("author") String author, @RequestParam("isInternal") Boolean isInternal,
-                                             @RequestParam("toolType") String toolType, @RequestParam("fileDesc") String fileDesc, @RequestParam("file") MultipartFile file) {
-        fileService.uploadFileV2(name, trScheduleId, fileType, author, isInternal, toolType, fileDesc, file);
+    public ResponseEntity<Object> uploadFile(@RequestParam("name") String name, @RequestParam("trScheduleId") Long trScheduleId, @RequestParam("fileType") String fileType,
+                                             @RequestParam("fileSource") String fileSource, @RequestParam("author") String author,
+                                             @RequestParam("isInternal") Boolean isInternal, @RequestParam("toolType") String toolType, @RequestParam("fileDesc") String fileDesc, @RequestParam("file") MultipartFile file) {
+        fileService.uploadFileV2(name, trScheduleId, fileType,fileSource, author, isInternal, toolType, fileDesc, file);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Log("同步培训材料信息")
+    @ApiOperation("同步培训材料信息")
+    @PostMapping(value = "/sync")
+    @PreAuthorize("@el.check('material:edit')")
+    public ResponseEntity<Object> syncFile(@RequestBody TrainMaterialSyncDto syncDto) {
+        fileService.syncFiles(syncDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

@@ -4,14 +4,16 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainExamDepart;
 import me.zhengjie.domain.TrainMaterialDepart;
+import me.zhengjie.domain.TrainMaterialFile;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrainExamDepartRepository;
 
 import me.zhengjie.repository.TrainMaterialDepartRepository;
+import me.zhengjie.repository.TrainMaterialFileRepository;
 import me.zhengjie.service.TrainMaterialDepartService;
-import me.zhengjie.service.dto.TrainMaterialDepartDto;
-import me.zhengjie.service.dto.TrainExamDepartQueryCriteria;
+import me.zhengjie.service.TrainMaterialFileService;
+import me.zhengjie.service.dto.*;
 import me.zhengjie.service.mapstruct.TrMaterialDepartMapper;
 import me.zhengjie.utils.QueryHelp;
 import me.zhengjie.utils.SecurityUtils;
@@ -31,8 +33,10 @@ import java.util.*;
 public class TrainMaterialDepartServiceImpl implements TrainMaterialDepartService {
 
     private final TrainMaterialDepartRepository materialDepartRepository;
+    private final TrainMaterialFileRepository materialFileRepository;
     private final TrMaterialDepartMapper materialDepartMapper;
     private final FileDeptRepository deptRepository;
+    private final TrainMaterialFileService materialFileService;
 
     @Override
     public List<TrainMaterialDepartDto> queryAll(TrainExamDepartQueryCriteria criteria) {
@@ -41,27 +45,40 @@ public class TrainMaterialDepartServiceImpl implements TrainMaterialDepartServic
         if (ValidationUtil.isNotEmpty(materialDeparts)) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
+            Map<Long, List<TrainMaterialFileDto>> fileMap = new HashMap<>();
             list = materialDepartMapper.toDto(materialDeparts);
-            list.forEach(staff -> {
-                deptIds.add(staff.getDepartId());
+            list.forEach(materialDepart -> {
+                deptIds.add(materialDepart.getDepartId());
             });
-            initExamDepartName(list, deptIds, deptMap);
+            if (!deptIds.isEmpty()) {
+                initExamDepartName(list, deptIds, deptMap);
+                deptIds.forEach(deptId -> {
+                    TrainMaterialFileQueryCriteria materialFileQueryCriteria = new TrainMaterialFileQueryCriteria();
+                    materialFileQueryCriteria.setDepartId(deptId);
+                    List<TrainMaterialFileDto> trainMaterialFileDtoList = materialFileService.queryAll(materialFileQueryCriteria);
+                    fileMap.put(deptId, trainMaterialFileDtoList);
+                });
+                list.forEach(materialDepart -> {
+                    materialDepart.setMaterialFileList(fileMap.get(materialDepart.getDepartId()));
+                });
+            }
+
         }
         return list;
     }
 
     private void initExamDepartName(List<TrainMaterialDepartDto> list, Set<Long> deptIds, Map<Long, String> deptMap) {
-        if (!deptIds.isEmpty()) {
-            List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
-            deptList.forEach(dept -> {
-                deptMap.put(dept.getId(), dept.getName());
+
+        List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
+        deptList.forEach(dept -> {
+            deptMap.put(dept.getId(), dept.getName());
+        });
+        if (ValidationUtil.isNotEmpty(deptList)) {
+            list.forEach(dto -> {
+                dto.setDepartName(deptMap.get(dto.getDepartId()));
             });
-            if (ValidationUtil.isNotEmpty(deptList)) {
-                list.forEach(dto -> {
-                    dto.setDepartName(deptMap.get(dto.getDepartId()));
-                });
-            }
         }
+
     }
 
     @Override
@@ -69,6 +86,13 @@ public class TrainMaterialDepartServiceImpl implements TrainMaterialDepartServic
     public void update(TrainMaterialDepart resource) {
         // todo 校验是否具备权限
         checkEditAuthorized(resource);
+        // 若更改为禁用则需要判断是否存在内容，若存在内容则不允许禁用
+        if (!resource.getEnabled()) {
+            List<TrainMaterialFile> materialFiles = materialFileRepository.findByDepartId(resource.getDepartId());
+            if (ValidationUtil.isNotEmpty(materialFiles)) {
+                throw new BadRequestException("No Valid!抱歉，该部门下存在有效材料信息，不可禁用！");
+            }
+        }
         materialDepartRepository.save(resource);
     }
 

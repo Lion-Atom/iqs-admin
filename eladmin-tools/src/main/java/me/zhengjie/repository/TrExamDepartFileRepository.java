@@ -68,4 +68,7 @@ public interface TrExamDepartFileRepository extends JpaRepository<TrExamDepartFi
 
     @Query(value = " select * from train_exam_depart_file where depart_id = ?1 and name = ?2 ", nativeQuery = true)
     TrExamDepartFile findByDepartIdAndName(Long departId, String name);
+
+    @Query(value = " select * from train_exam_depart_file where tr_exam_depart_file_id = ?1 ", nativeQuery = true)
+    List<TrExamDepartFile> findByIdIn(Set<Long> bindingFileIds);
 }

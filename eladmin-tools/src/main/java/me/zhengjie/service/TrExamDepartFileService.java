@@ -3,6 +3,7 @@ package me.zhengjie.service;
 import me.zhengjie.domain.TrExamDepartFile;
 import me.zhengjie.service.dto.TrExamDepartFileDto;
 import me.zhengjie.service.dto.TrExamDepartFileQueryCriteria;
+import me.zhengjie.service.dto.TrainExamFileQueryByExample;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,4 +72,12 @@ public interface TrExamDepartFileService {
      * @param file         文件内容
      */
     void uploadScheduleFile(Long trScheduleId, Set<Long> departIds, String name, Boolean enabled, String fileDesc, MultipartFile file);
+
+    /**
+     * 条件查询
+     *
+     * @param queryDto 查询条件
+     * @return /
+     */
+    List<TrExamDepartFile> findByExample(TrainExamFileQueryByExample queryDto);
 }

@@ -15,6 +15,7 @@
  */
 package me.zhengjie.repository;
 
+import me.zhengjie.domain.TrScheduleFile;
 import me.zhengjie.domain.TrScheduleFileV2;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -65,4 +66,23 @@ public interface TrScheduleFileV2Repository extends JpaRepository<TrScheduleFile
      */
     @Query(value = " select * from train_schedule_file where train_schedule_id = ?1 order by file_type ", nativeQuery = true)
     List<TrScheduleFileV2> findByTrScheduleId(Long trScheduleId);
+
+    /**
+     * @param trScheduleId 培训计划ID
+     * @param fileType     文件类型
+     * @return /
+     */
+    @Query(value = " select * from train_schedule_file where train_schedule_id = ?1 and file_type =?2 order by file_type ", nativeQuery = true)
+    List<TrScheduleFileV2> findByTrScheduleIdAndType(Long trScheduleId, String fileType);
+
+    /**
+     * 条件删除指定出处的培训计划附件信息
+     *
+     * @param trScheduleId 培训计划ID
+     * @param selected     已有项
+     * @param fileType     文件类型
+     */
+    @Modifying
+    @Query(value = " delete from train_schedule_file where train_schedule_id = ?1 and file_source = ?2  and file_type = ?3 ", nativeQuery = true)
+    void deleteByTrScheduleIdAndFileSourceAndFileType(Long trScheduleId, String selected, String fileType);
 }

@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import me.zhengjie.base.BaseDTO;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author tmj
@@ -23,5 +25,5 @@ public class TrainMaterialDepartDto extends BaseDTO implements Serializable {
 
     private Boolean enabled;
 
-
+    private List<TrainMaterialFileDto> materialFileList = new ArrayList<>();
 }

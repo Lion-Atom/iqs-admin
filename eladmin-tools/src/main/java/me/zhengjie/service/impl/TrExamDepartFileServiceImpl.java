@@ -15,6 +15,7 @@ import me.zhengjie.repository.TrainExamDepartRepository;
 import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.dto.TrExamDepartFileDto;
 import me.zhengjie.service.dto.TrExamDepartFileQueryCriteria;
+import me.zhengjie.service.dto.TrainExamFileQueryByExample;
 import me.zhengjie.service.mapstruct.TrExamDepartFileMapper;
 import me.zhengjie.utils.*;
 import org.springframework.data.domain.Page;
@@ -216,5 +217,16 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
             FileUtil.del(file);
             throw e;
         }
+    }
+
+    @Override
+    public List<TrExamDepartFile> findByExample(TrainExamFileQueryByExample queryDto) {
+        List<TrExamDepartFile> list = new ArrayList<>();
+        List<TrExamDepartFile> files = fileRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, queryDto, criteriaBuilder));
+       // todo 根据名称、类型和大小去重
+        if (ValidationUtil.isNotEmpty(files)) {
+//            files.forEach();
+        }
+        return list;
     }
 }

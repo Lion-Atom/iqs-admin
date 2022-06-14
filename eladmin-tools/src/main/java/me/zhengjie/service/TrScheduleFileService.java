@@ -2,6 +2,8 @@ package me.zhengjie.service;
 
 import me.zhengjie.domain.TrNewStaffFile;
 import me.zhengjie.domain.TrScheduleFile;
+import me.zhengjie.domain.TrScheduleFileV2;
+import me.zhengjie.service.dto.TrainMaterialSyncDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,7 +32,7 @@ public interface TrScheduleFileService {
      * @param trScheduleId 培训日程安排ID
      * @return /
      */
-    List<TrScheduleFile> getByTrScheduleId(Long trScheduleId);
+    List<TrScheduleFileV2> getByTrScheduleId(Long trScheduleId);
 
     /**
      * @param ids 附件标识集合
@@ -44,13 +46,14 @@ public interface TrScheduleFileService {
      * @param name         文件名
      * @param trScheduleId 培训计划ID
      * @param fileType     文件类型
+     * @param fileSource     文件出处
      * @param author       作者
      * @param isInternal   是否内部
      * @param toolType     工具类型
      * @param fileDesc     文件描述
      * @param file         文件
      */
-    void uploadFileV2(String name, Long trScheduleId, String fileType, String author,  Boolean isInternal, String toolType, String fileDesc, MultipartFile file);
+    void uploadFileV2(String name, Long trScheduleId, String fileType,String fileSource, String author,  Boolean isInternal, String toolType, String fileDesc, MultipartFile file);
 
 
     /**
@@ -58,5 +61,11 @@ public interface TrScheduleFileService {
      * @param fileType     文件类型
      * @return 培训附件列表
      */
-    List<TrScheduleFile> getByTrScheduleIdAndType(Long trScheduleId, String fileType);
+    List<TrScheduleFileV2> getByTrScheduleIdAndType(Long trScheduleId, String fileType);
+
+
+    /**
+     * @param syncDto 同步参数：培训计划ID（或虚拟ID）和培训材料ID
+     */
+    void syncFiles(TrainMaterialSyncDto syncDto);
 }
