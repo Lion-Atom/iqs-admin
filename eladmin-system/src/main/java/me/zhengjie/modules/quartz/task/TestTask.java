@@ -338,7 +338,7 @@ public class TestTask {
      */
     @Transactional(rollbackFor = Exception.class)
     public void checkTrScheduleIsOpened() {
-        List<TrainSchedule> schedules = trainScheduleRepository.findAll();
+        List<TrainSchedule> schedules = trainScheduleRepository.findAllByIsNotDraft(CommonConstants.SCHEDULE_STATUS_DRAFT);
         if (ValidationUtil.isNotEmpty(schedules)) {
             schedules.forEach(schedule -> {
                 List<TrainExamStaff> examStaffs = examStaffRepository.findAllByTrScheduleId(schedule.getId());
@@ -420,7 +420,7 @@ public class TestTask {
             });
         }
         // 2.培训安排到期提醒
-        List<TrainSchedule> schedules = trainScheduleRepository.findAllByIsRemind(true);
+        List<TrainSchedule> schedules = trainScheduleRepository.findAllByIsRemindAndIsNotDraft(true,CommonConstants.SCHEDULE_STATUS_DRAFT);
         if (ValidationUtil.isNotEmpty(schedules)) {
             schedules.forEach(schedule -> {
                 // 监控需要提醒日期与今日相比，确定是否开启邮件通知

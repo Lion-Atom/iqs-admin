@@ -102,6 +102,7 @@ public class TrainSchedule extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "延期原因描述")
     private String delayDesc;
 
+    @NotBlank
     @ApiModelProperty(value = "培训计划状态")
     private String scheduleStatus;
 

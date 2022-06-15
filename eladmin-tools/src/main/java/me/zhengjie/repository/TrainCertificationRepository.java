@@ -90,4 +90,12 @@ public interface TrainCertificationRepository extends JpaRepository<TrainCertifi
     @Modifying
     @Query(value = "delete from train_certification where certification_type=?1 and train_schedule_id=?2 and staff_name = ?3 ", nativeQuery = true)
     void deleteAllByCertTypeAndTrScheduleIdAndStaffName(String certificationType, Long trScheduleId, String staffName);
+
+    /**
+     * 删除培训计划下考试证书
+     * @param trScheduleIds 培训计划IDS
+     */
+    @Modifying
+    @Query(value = "delete from train_certification where train_schedule_id in ?1 ", nativeQuery = true)
+    void deleteAllByTrScheduleIdIn(Set<Long> trScheduleIds);
 }

@@ -134,7 +134,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
 
     @Override
     public TrainSchedule findById(Long id) {
-        // todo  暂时用不到，不想写。。。
+        // 暂时用不到，不想写。。。
         TrainSchedule schedule = scheduleRepository.findById(id).orElseGet(TrainSchedule::new);
         ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", id);
         return schedule;
@@ -146,7 +146,9 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         // 验证修改权限
         checkEditAuthorized(resource);
         initScheduleInfo(resource);
-        judgeScheduleStatus(resource);
+        if (!resource.getScheduleStatus().equals(CommonConstants.SCHEDULE_STATUS_DRAFT)) {
+            judgeScheduleStatus(resource);
+        }
         TrainSchedule schedule = scheduleRepository.findById(resource.getId()).orElseGet(TrainSchedule::new);
         ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", resource.getId());
         //  先判断是否需要同步考试数据,依据：是否考试标志发生变化
@@ -258,7 +260,9 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     public void create(TrainScheduleDto resource) {
         TrainSchedule schedule = scheduleMapper.toEntity(resource);
         initScheduleInfo(schedule);
-        judgeScheduleStatus(schedule);
+        if (!resource.getScheduleStatus().equals(CommonConstants.SCHEDULE_STATUS_DRAFT)) {
+            judgeScheduleStatus(schedule);
+        }
         TrainSchedule newSchedule = scheduleRepository.save(schedule);
         // 添加涉及部门
 //        initScheduleBindDepts(newSchedule, resource.getBindDepts());
@@ -269,7 +273,6 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
             });
             fileRepository.saveAll(resource.getMaterialFileList());
             // todo 同步培训材料
-
         }
         if (ValidationUtil.isNotEmpty(resource.getExamFileList())) {
             resource.getExamFileList().forEach(file -> {
@@ -315,7 +318,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         participantRepository.deleteAllByTrScheduleIdIn(ids);
         // 删除考生考试信息
         examStaffRepository.deleteAllByTrScheduleIdIn(ids);
-        // todo 删除用户认证信息
-
+        // 删除用户认证信息
+        certificationRepository.deleteAllByTrScheduleIdIn(ids);
     }
 }

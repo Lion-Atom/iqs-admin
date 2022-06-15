@@ -801,12 +801,17 @@ public class CommonConstants {
     public static final String TRAIN_TIP_TYPE_SCHEDULE = "培训计划";
 
     /**
-     * 日程安排状态 - 开放中
+     * 培训计划状态 - 准备中
+     */
+    public static final String SCHEDULE_STATUS_DRAFT = "准备中";
+
+    /**
+     * 培训计划状态 - 开放中
      */
     public static final String SCHEDULE_STATUS_OPENED = "开放中";
 
     /**
-     * 日程安排状态 - 已关闭
+     * 培训计划状态 - 已关闭
      */
     public static final String SCHEDULE_STATUS_CLOSED = "已关闭";
 

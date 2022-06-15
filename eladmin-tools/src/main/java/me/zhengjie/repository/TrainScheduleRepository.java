@@ -40,11 +40,12 @@ public interface TrainScheduleRepository extends JpaRepository<TrainSchedule, Lo
     void deleteAllByIdIn(Set<Long> ids);
 
     /**
-     * @param b 是否需要提前提醒
+     * @param isRemind 是否需要提前提醒
+     * @param scheduleStatus 培训计划状态
      * @return 需要提前提星星的培训日程安排信息
      */
-    @Query(value = "select * from train_schedule where is_remind = ?1 ", nativeQuery = true)
-    List<TrainSchedule> findAllByIsRemind(boolean b);
+    @Query(value = "select * from train_schedule where is_remind = ?1 and schedule_status <>?2", nativeQuery = true)
+    List<TrainSchedule> findAllByIsRemindAndIsNotDraft(boolean isRemind, String scheduleStatus);
 
     /**
      * 根据标识集合查询培训计划信息
@@ -54,4 +55,7 @@ public interface TrainScheduleRepository extends JpaRepository<TrainSchedule, Lo
      */
     @Query(value = "SELECT * FROM train_schedule where train_schedule_id in ?1", nativeQuery = true)
     List<TrainSchedule> findByIdIn(Set<Long> scheduleIds);
+
+    @Query(value = "SELECT * FROM train_schedule where schedule_status <> ?1", nativeQuery = true)
+    List<TrainSchedule> findAllByIsNotDraft(String scheduleStatus);
 }

@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
-* @author Zheng Jie
-* @date 2022-05-18 14:49:34
-*/
+ * @author Zheng Jie
+ * @date 2022-05-18 14:49:34
+ */
 @Data
 @NoArgsConstructor
 public class TrainScheduleQueryCriteria {
@@ -37,6 +37,10 @@ public class TrainScheduleQueryCriteria {
 
     @Query
     private String trainType;
+
+    @Query
+    private String scheduleStatus;
+
 
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> createTime;
