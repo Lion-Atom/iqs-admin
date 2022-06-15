@@ -49,5 +49,5 @@ public interface TrainMaterialFileService {
 
     void updateFile(Long id, String name, Long departId, String author, String version, Boolean isInternal, String toolType, String fileDesc, Boolean enabled, MultipartFile file);
 
-    List<TrainMaterialFile> findByExample(TrainMaterialQueryByExample queryDto);
+    List<TrainMaterialFileDto> findByExample(TrainMaterialQueryByExample queryDto);
 }

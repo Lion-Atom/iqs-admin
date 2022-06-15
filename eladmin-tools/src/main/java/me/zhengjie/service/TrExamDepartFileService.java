@@ -79,5 +79,5 @@ public interface TrExamDepartFileService {
      * @param queryDto 查询条件
      * @return /
      */
-    List<TrExamDepartFile> findByExample(TrainExamFileQueryByExample queryDto);
+    List<TrExamDepartFileDto> findByExample(TrainExamFileQueryByExample queryDto);
 }

@@ -220,12 +220,18 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
     }
 
     @Override
-    public List<TrExamDepartFile> findByExample(TrainExamFileQueryByExample queryDto) {
-        List<TrExamDepartFile> list = new ArrayList<>();
+    public List<TrExamDepartFileDto> findByExample(TrainExamFileQueryByExample queryDto) {
+        List<TrExamDepartFileDto> list = new ArrayList<>();
         List<TrExamDepartFile> files = fileRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, queryDto, criteriaBuilder));
        // todo 根据名称、类型和大小去重
         if (ValidationUtil.isNotEmpty(files)) {
-//            files.forEach();
+            Set<Long> deptIds = new HashSet<>();
+            Map<Long, String> deptMap = new HashMap<>();
+            list = departFileMapper.toDto(files);
+            list.forEach(staff -> {
+                deptIds.add(staff.getDepartId());
+            });
+            initDepartName(list, deptIds, deptMap);
         }
         return list;
     }
