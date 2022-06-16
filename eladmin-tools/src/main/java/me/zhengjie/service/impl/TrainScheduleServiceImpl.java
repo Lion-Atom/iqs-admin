@@ -41,6 +41,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private final TrParticipantMapper trParticipantMapper;
     private final TrainExamDepartRepository examDepartRepository;
     private final TrainExamStaffRepository examStaffRepository;
+    private final TrainNewStaffRepository staffTrainRepository;
     private final ToolsUserRepository toolsUserRepository;
     private final ToolsUserMapper toolsUserMapper;
     private final TrainCertificationRepository certificationRepository;
@@ -89,9 +90,16 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         Page<TrainSchedule> page = scheduleRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
         List<TrainScheduleDto> list = new ArrayList<>();
         long total = 0L;
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             list = scheduleMapper.toDto(page.getContent());
             list.forEach(schedule -> {
+                if (schedule.getCreateBy().equals(username) || isAdmin) {
+                    schedule.setHasEditAuthorized(true);
+                } else {
+                    schedule.setHasEditAuthorized(false);
+                }
                 if (!schedule.getBindDepts().isEmpty()) {
                     // todo 处理涉及部门
                     List<String> deptNames = new ArrayList<>();
@@ -314,6 +322,8 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
             checkEditAuthorized(schedule);
         }
         scheduleRepository.deleteAllByIdIn(ids);
+        // 删除员工培训信息
+        staffTrainRepository.deleteAllByTrScheduleIdIn(ids);
         // 删除参与者信息
         participantRepository.deleteAllByTrScheduleIdIn(ids);
         // 删除考生考试信息

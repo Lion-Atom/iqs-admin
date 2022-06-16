@@ -78,4 +78,6 @@ public class TrainNewStaffDto extends BaseDTO implements Serializable {
     private Boolean isAuthorize;
 
     private List<TrNewStaffFile> fileList = new ArrayList<>();
+
+    private Boolean hasEditAuthorized;
 }

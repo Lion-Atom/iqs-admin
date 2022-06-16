@@ -85,6 +85,7 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
     @Transactional(rollbackFor = Exception.class)
     public void update(TrainMaterialFile resources) {
         // todo 是否校验有无权限删改
+
         materialFileRepository.save(resources);
     }
 

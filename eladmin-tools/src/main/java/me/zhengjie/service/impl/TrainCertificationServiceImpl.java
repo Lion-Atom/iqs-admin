@@ -5,6 +5,7 @@ import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainCertification;
 import me.zhengjie.domain.TrainCertification;
+import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.*;
 import me.zhengjie.service.TrainCertificationService;
@@ -15,10 +16,7 @@ import me.zhengjie.service.dto.TrainCertificationDto;
 import me.zhengjie.service.dto.TrainCertificationQueryCriteria;
 import me.zhengjie.service.mapstruct.TrainCertificationMapper;
 import me.zhengjie.service.mapstruct.TrainCertificationMapper;
-import me.zhengjie.utils.FileUtil;
-import me.zhengjie.utils.PageUtil;
-import me.zhengjie.utils.QueryHelp;
-import me.zhengjie.utils.ValidationUtil;
+import me.zhengjie.utils.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -93,12 +91,19 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         Map<String, Object> map = new HashMap<>();
         List<TrainCertificationDto> cerList = new ArrayList<>();
         long total = 0L;
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
             cerList = certificationMapper.toDto(page.getContent());
-            cerList.forEach(staff -> {
-                deptIds.add(staff.getDepartId());
+            cerList.forEach(cert -> {
+                deptIds.add(cert.getDepartId());
+                if (cert.getCreateBy().equals(username) || cert.getStaffName().equals(username) || isAdmin) {
+                    cert.setHasEditAuthorized(true);
+                } else {
+                    cert.setHasEditAuthorized(false);
+                }
             });
             initCerDepartName(cerList, deptIds, deptMap);
             total = page.getTotalElements();
@@ -124,6 +129,12 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(TrainCertification resource) {
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if (!resource.getCreateBy().equals(username) && !resource.getStaffName().equals(username) && !isAdmin) {
+            // 非创建者亦非管理员则无权限修改和删除
+            throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+        }
         TrainCertification entity = certificationRepository.findById(resource.getId()).orElseGet(TrainCertification::new);
         ValidationUtil.isNull(entity.getId(), "TrainCertification", "id", resource.getId());
         TrainCertification trainCertification = null;
@@ -159,7 +170,7 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         }
         TrainCertification resource = certificationMapper.toEntity(dto);
         judgeCerStatus(resource);
-        // todo 考试与证书关联
+        // 考试与证书关联，已在考试信息明细中前后端配合校验、判断
         TrainCertification certification = certificationRepository.save(resource);
         // 文件列表
         if (ValidationUtil.isNotEmpty(dto.getFileList())) {
@@ -188,6 +199,18 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if (!isAdmin) {
+            ids.forEach(id -> {
+                TrainCertification cert = certificationRepository.findById(id).orElseGet(TrainCertification::new);
+                ValidationUtil.isNull(cert.getId(), "TrainCertification", "id", id);
+                if (!cert.getCreateBy().equals(username) && !cert.getStaffName().equals(username)) {
+                    // 非创建者亦非管理员则无权限修改和删除
+                    throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+                }
+            });
+        }
         certificationRepository.deleteAllByIdIn(ids);
         // 删除相关附件
         fileRepository.deleteByTrNewStaffIdIn(ids);

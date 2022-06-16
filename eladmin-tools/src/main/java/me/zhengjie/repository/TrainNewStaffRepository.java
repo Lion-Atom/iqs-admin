@@ -63,4 +63,8 @@ public interface TrainNewStaffRepository extends JpaRepository<TrainNewStaff, Lo
      */
     @Query(value = "select * from train_new_staff where train_schedule_id = ?1", nativeQuery = true)
     List<TrainNewStaff> findAllByTrScheduleId(Long trScheduleId);
+
+    @Modifying
+    @Query(value = "delete from train_new_staff where train_schedule_id = ?1", nativeQuery = true)
+    void deleteAllByTrScheduleIdIn(Set<Long> ids);
 }

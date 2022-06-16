@@ -89,4 +89,6 @@ public class TrainScheduleDto extends BaseDTO implements Serializable {
     private Set<ScheduleDept> bindDepts;
 
     private String bindDeptStr;
+
+    private Boolean hasEditAuthorized;
 }

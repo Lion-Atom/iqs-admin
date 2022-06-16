@@ -79,4 +79,6 @@ public class TrainCertificationDto extends BaseDTO implements Serializable {
     private String certificationStatus;
 
     private List<TrCertificationFile> fileList = new ArrayList<>();
+
+    private Boolean hasEditAuthorized;
 }
