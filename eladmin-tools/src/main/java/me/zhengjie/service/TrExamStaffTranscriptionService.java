@@ -42,8 +42,8 @@ public interface TrExamStaffTranscriptionService {
     List<TrExamStaffTranscript> getByTrExamStaffId(Long trExamStaffId);
 
     /**
-     * @param ids 附件标识集合
+     * @param id 附件标识
      */
-    void delete(Set<Long> ids);
+    void delete(Long id);
 
 }

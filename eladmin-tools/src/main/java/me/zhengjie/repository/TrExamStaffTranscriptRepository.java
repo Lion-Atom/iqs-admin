@@ -63,4 +63,8 @@ public interface TrExamStaffTranscriptRepository extends JpaRepository<TrExamSta
     @Modifying
     @Query(value = " delete  from train_exam_staff_transcript where train_exam_staff_id in ?1 ", nativeQuery = true)
     void deleteByTrExamStaffIdIn(Set<Long> ids);
+
+    @Modifying
+    @Query(value = " delete  from train_exam_staff_transcript where tr_exam_staff_transcript_id = ?1 ", nativeQuery = true)
+    void deleteAllById(Long id);
 }

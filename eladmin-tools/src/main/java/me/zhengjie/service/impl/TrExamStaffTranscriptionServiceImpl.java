@@ -82,10 +82,14 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
             if (examPassed) {
                 // 考试通过则更改员工培训记录信息
                 staff.setIsAuthorize(true);
-                staff.setIsFinished(true);
-                staff.setReason(null);
-                // todo 通过考试后，若需要发证则生成培训证书记录
-                if(schedule.getIsCert()){
+                if (!staff.getIsFinished()) {
+                    staff.setIsFinished(false);
+                    staff.setReason("通过考试，待上传相关证明");
+                } else {
+                    staff.setReason(null);
+                }
+                // 通过考试后，若需要发证则生成培训证书记录
+                if (schedule.getIsCert()) {
                     TrainCertification cert = new TrainCertification();
                     cert.setStaffName(staff.getStaffName());
                     cert.setHireDate(staff.getHireDate());
@@ -96,9 +100,9 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
                     cert.setCertificationType(CommonConstants.STAFF_CER_TYPE_JOB);
                     cert.setTrScheduleId(staff.getTrScheduleId());
                     cert.setIsRemind(false);
-                    if(schedule.getIsDelay()) {
+                    if (schedule.getIsDelay()) {
                         cert.setTrainDate(schedule.getNewTrainTime());
-                    }else {
+                    } else {
                         cert.setTrainDate(schedule.getTrainTime());
                     }
                     cert.setTrainContent(schedule.getTrainContent());
@@ -110,7 +114,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
                 staff.setIsAuthorize(false);
                 staff.setReason("尚未通过考试");
                 // 若存在发证信息
-                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndStaffName(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(),examStaff.getStaffName());
+                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndStaffName(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(), examStaff.getStaffName());
             }
             staffTrainRepository.save(staff);
         } catch (Exception e) {
@@ -127,7 +131,29 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(Set<Long> ids) {
-        transcriptRepository.deleteAllByIdIn(ids);
+    public void delete(Long id) {
+        TrExamStaffTranscript trans = transcriptRepository.findById(id).orElseGet(TrExamStaffTranscript::new);
+        ValidationUtil.isNull(trans.getId(), "TrExamStaffTranscript", "id", id);
+        if (trans.getExamPassed()) {
+            // 考试原是通过但被删除则需要更改员工培训记录信息
+            // 1.获取员工考试信息
+            TrainExamStaff examStaff = examStaffRepository.findById(trans.getTrExamStaffId()).orElseGet(TrainExamStaff::new);
+            ValidationUtil.isNull(examStaff.getId(), "TrainExamStaff", "id", trans.getTrExamStaffId());
+            // 2.定位到培训计划
+            TrainSchedule schedule = trScheduleRepository.findById(examStaff.getTrScheduleId()).orElseGet(TrainSchedule::new);
+            ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", examStaff.getTrScheduleId());
+            // 3.收回员工培训记录状态变更为考试未通过
+            TrainNewStaff staff = staffTrainRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(examStaff.getDepartId(), examStaff.getTrScheduleId(), examStaff.getStaffName());
+            // 考试不通过则更正员工培训未完成原因
+            staff.setIsAuthorize(false);
+            staff.setReason("尚未通过考试");
+            staffTrainRepository.save(staff);
+            // 4.若发放证书应当及时召回
+            if (schedule.getIsCert()) {
+                // 找回证书
+                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndStaffName(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(), examStaff.getStaffName());
+            }
+        }
+        transcriptRepository.deleteAllById(id);
     }
 }

@@ -367,7 +367,7 @@ public class TestTask {
                             if (ValidationUtil.isNotEmpty(staffs)) {
                                 staffs.forEach(staff -> {
                                     if (!staff.getIsFinished()) {
-                                        staff.setReason("尚未通过考试");
+                                        staff.setReason("已培训,尚未通过考试");
                                         disFinishedStaffs.add(staff);
                                     }
                                 });
@@ -377,6 +377,9 @@ public class TestTask {
                     } else {
                         if (ValidationUtil.isNotEmpty(staffs)) {
                             staffs.forEach(staff -> {
+                                if(!staff.getIsFinished()) {
+                                   staff.setReason("已培训，待上传相关证明");
+                                }
                                 staff.setIsAuthorize(true);
                             });
                             staffTrainRepository.saveAll(staffs);

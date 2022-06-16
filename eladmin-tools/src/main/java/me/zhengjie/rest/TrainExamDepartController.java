@@ -19,16 +19,21 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainExamDepart;
 import me.zhengjie.exception.BadRequestException;
+import me.zhengjie.service.FileDeptService;
 import me.zhengjie.service.TrainExamDepartService;
 import me.zhengjie.service.dto.TrainExamDepartQueryCriteria;
+import me.zhengjie.utils.SecurityUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -42,12 +47,27 @@ import java.util.Set;
 public class TrainExamDepartController {
 
     private final TrainExamDepartService examDepartService;
+    private final FileDeptService fileDeptService;
     private static final String ENTITY_NAME = "TrainExamDepart";
 
     @ApiOperation("查询考试关联部门信息")
     @GetMapping
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> query(TrainExamDepartQueryCriteria criteria) {
+        Boolean isAdmin = SecurityUtils.getIsAdmin();
+        List<Long> scopes = SecurityUtils.getCurrentUserDataScope();
+        if (!isAdmin && ObjectUtils.isEmpty(criteria.getDeptId())) {
+            // criteria.setDeptId(deptId); // 注释并更改为获取权限范围的赋值原因：个人所拥有的权限可能大于或小于子集的部门权限
+            criteria.getDepartIds().addAll(scopes);
+        }
+        //部门查询
+        if (!ObjectUtils.isEmpty(criteria.getDeptId())) {
+            criteria.getDepartIds().add(criteria.getDeptId());
+            // 先查找是否存在子节点
+            List<FileDept> data = fileDeptService.findByPid(criteria.getDeptId());
+            // 然后把子节点的ID都加入到集合中
+            criteria.getDepartIds().addAll(fileDeptService.getDeptChildren(data));
+        }
         return new ResponseEntity<>(examDepartService.queryAll(criteria), HttpStatus.OK);
     }
 

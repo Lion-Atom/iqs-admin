@@ -32,8 +32,11 @@ import java.util.Set;
 @NoArgsConstructor
 public class TrainExamDepartQueryCriteria {
 
-    @Query
-    private Long departId;
+
+    private Long deptId;
+
+    @Query(propName = "departId", type = Query.Type.IN)
+    private Set<Long> departIds = new HashSet<>();
 
     @Query
     private Boolean enabled;

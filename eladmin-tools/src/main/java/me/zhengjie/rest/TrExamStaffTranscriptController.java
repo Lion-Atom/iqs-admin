@@ -65,8 +65,8 @@ public class TrExamStaffTranscriptController {
     @ApiOperation("删除员工培训考试试卷信息")
     @DeleteMapping
     @PreAuthorize("@el.check('exam:edit')")
-    public ResponseEntity<Object> delete(@RequestBody Set<Long> ids) {
-        fileService.delete(ids);
+    public ResponseEntity<Object> delete(@RequestBody Long id) {
+        fileService.delete(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

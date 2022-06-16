@@ -99,21 +99,21 @@ public class HomeController {
 
     @ApiOperation("审核系统类型执行分布")
     @GetMapping(value = "/auditPlan/byType")
-    @PreAuthorize("@el.check('plan:list')")
+//    @PreAuthorize("@el.check('plan:list')")
     public ResponseEntity<Object> queryAuditPlansByType(){
         return new ResponseEntity<>(overviewService.queryAuditPlansByType(),HttpStatus.OK);
     }
 
     @ApiOperation("审核体系审核员分布")
     @GetMapping(value = "/auditor/bySystem")
-    @PreAuthorize("@el.check('auditor:list')")
+//    @PreAuthorize("@el.check('auditor:list')")
     public ResponseEntity<Object> queryAuditorBySystem(){
         return new ResponseEntity<>(overviewService.queryAuditorBySystem(),HttpStatus.OK);
     }
 
     @ApiOperation("审核体系审核员分布")
     @GetMapping(value = "/auditPlan/byReason")
-    @PreAuthorize("@el.check('plan:list')")
+//    @PreAuthorize("@el.check('plan:list')")
     public ResponseEntity<Object> queryAuditorByReason(){
         return new ResponseEntity<>(overviewService.queryAuditorByReason(),HttpStatus.OK);
     }
