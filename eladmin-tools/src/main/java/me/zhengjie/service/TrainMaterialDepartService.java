@@ -21,7 +21,6 @@ public interface TrainMaterialDepartService {
      */
     List<TrainMaterialDepartDto> queryAll(TrainExamDepartQueryCriteria criteria);
 
-
     /**
      * 更新
      *

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainNewStaff;
 import me.zhengjie.domain.TrainSchedule;
+import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.exception.EntityIDExistException;
 import me.zhengjie.repository.FileDeptRepository;
@@ -14,10 +15,7 @@ import me.zhengjie.service.TrainNewStaffService;
 import me.zhengjie.service.dto.TrainNewStaffDto;
 import me.zhengjie.service.dto.TrainNewStaffQueryCriteria;
 import me.zhengjie.service.mapstruct.TrainNewStaffMapper;
-import me.zhengjie.utils.FileUtil;
-import me.zhengjie.utils.PageUtil;
-import me.zhengjie.utils.QueryHelp;
-import me.zhengjie.utils.ValidationUtil;
+import me.zhengjie.utils.*;
 import org.apache.poi.hssf.record.ObjRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -118,13 +116,19 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
         List<TrainNewStaffDto> list = new ArrayList<>();
         long total = 0L;
         if (ValidationUtil.isNotEmpty(page.getContent())) {
+            Boolean isAdmin = SecurityUtils.isAdmin();
+            String username = SecurityUtils.getCurrentUsername();
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
             Set<Long> scheduleIds = new HashSet<>();
             Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
-            Map<Long, String> trainStatusMap = new HashMap<>();
             list = staffMapper.toDto(page.getContent());
             list.forEach(staff -> {
+                if (staff.getCreateBy().equals(username) || staff.getStaffName().equals(username) || isAdmin) {
+                    staff.setHasEditAuthorized(true);
+                } else {
+                    staff.setHasEditAuthorized(false);
+                }
                 deptIds.add(staff.getDepartId());
                 scheduleIds.add(staff.getTrScheduleId());
             });
@@ -190,6 +194,20 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
+        // 员工信息删改权限控制
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if (!isAdmin) {
+            ids.forEach(id -> {
+                TrainNewStaff staff = staffRepository.findById(id).orElseGet(TrainNewStaff::new);
+                ValidationUtil.isNull(staff.getId(), "TrainNewStaff", "id", id);
+                if (!staff.getCreateBy().equals(username) && !staff.getStaffName().equals(username)) {
+                    // 非创建者亦非管理员则无权限修改和删除
+                    throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+                }
+            });
+        }
+        // 员工信息
         staffRepository.deleteAllByIdIn(ids);
         // 删除相关附件
         fileRepository.deleteByTrNewStaffIdIn(ids);

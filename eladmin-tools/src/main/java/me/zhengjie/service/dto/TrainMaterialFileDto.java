@@ -42,4 +42,8 @@ public class TrainMaterialFileDto extends BaseDTO implements Serializable {
     private String type;
 
     private String size;
+
+    private Boolean enabled;
+
+    private Boolean hasEditAuthorized;
 }

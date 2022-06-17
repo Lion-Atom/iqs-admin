@@ -41,8 +41,26 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
 
     @Override
     public Map<String, Object> query(TrainMaterialFileQueryCriteria criteria, Pageable pageable) {
+        Map<String, Object> map = new HashMap<>();
         Page<TrainMaterialFile> page = materialFileRepository.findAll((root, query, cb) -> QueryHelp.getPredicate(root, criteria, cb), pageable);
-        return PageUtil.toPage(page);
+        List<TrainMaterialFileDto> list = new ArrayList<>();
+        long total = 0L;
+        if (ValidationUtil.isNotEmpty(page.getContent())) {
+            Boolean isAdmin = SecurityUtils.isAdmin();
+            String username = SecurityUtils.getCurrentUsername();
+            list = materialFileMapper.toDto(page.getContent());
+            list.forEach(file -> {
+                if (file.getCreateBy().equals(username) || file.getAuthor().equals(username) || isAdmin) {
+                    file.setHasEditAuthorized(true);
+                } else {
+                    file.setHasEditAuthorized(false);
+                }
+            });
+            total = page.getTotalElements();
+        }
+        map.put("content", list);
+        map.put("totalElements", total);
+        return map;
     }
 
     @Override
@@ -84,15 +102,27 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(TrainMaterialFile resources) {
-        // todo 是否校验有无权限删改
-
+        // 校验有无权限修改
+        judgeHasEditAuthorized(resources);
         materialFileRepository.save(resources);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
-        // todo 是否校验有无权限删改
+        // 校验有无权限删改
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if (!isAdmin) {
+            ids.forEach(id -> {
+                TrainMaterialFile staff = materialFileRepository.findById(id).orElseGet(TrainMaterialFile::new);
+                ValidationUtil.isNull(staff.getId(), "TrainMaterialFile", "id", id);
+                if (!staff.getCreateBy().equals(username) && !staff.getAuthor().equals(username)) {
+                    // 非创建者、作者亦非管理员则无权限修改和删除
+                    throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+                }
+            });
+        }
         materialFileRepository.deleteAllByIdIn(ids);
     }
 
@@ -151,6 +181,7 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
     public void updateFile(Long id, String name, Long departId, String author, String version, Boolean isInternal, String toolType, String fileDesc, Boolean enabled, MultipartFile multipartFile) {
         TrainMaterialFile materialFile = materialFileRepository.findById(id).orElseGet(TrainMaterialFile::new);
         ValidationUtil.isNull(materialFile.getId(), "TrainMaterialFile", "id", id);
+        judgeHasEditAuthorized(materialFile);
         // 编辑外围信息
         materialFile.setAuthor(author);
         materialFile.setDepartId(departId);
@@ -186,11 +217,22 @@ public class TrainMaterialFileServiceImpl implements TrainMaterialFileService {
         }
     }
 
+    private void judgeHasEditAuthorized(TrainMaterialFile materialFile) {
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if (!isAdmin) {
+            if (!materialFile.getCreateBy().equals(username) && !materialFile.getAuthor().equals(username)) {
+                // 非创建者、作者亦非管理员则无权限修改和删除
+                throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+            }
+        }
+    }
+
     @Override
     public List<TrainMaterialFileDto> findByExample(TrainMaterialQueryByExample queryDto) {
         List<TrainMaterialFileDto> list = new ArrayList<>();
         List<TrainMaterialFile> materialFiles = materialFileRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, queryDto, criteriaBuilder));
-        if(ValidationUtil.isNotEmpty(materialFiles)) {
+        if (ValidationUtil.isNotEmpty(materialFiles)) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
             list = materialFileMapper.toDto(materialFiles);
