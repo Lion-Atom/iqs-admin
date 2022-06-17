@@ -81,5 +81,7 @@ public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private Boolean isAuthorize;
 
+    private Boolean hasEditAuthorized;
+
     private List<TrExamStaffTranscript> transcriptList = new ArrayList<>();
 }

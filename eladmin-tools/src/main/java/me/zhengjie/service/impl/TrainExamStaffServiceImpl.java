@@ -5,6 +5,7 @@ import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrExamStaffTranscript;
 import me.zhengjie.domain.TrainExamStaff;
 import me.zhengjie.domain.TrainSchedule;
+import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.repository.TrExamStaffTranscriptRepository;
@@ -16,6 +17,7 @@ import me.zhengjie.service.dto.TrainExamStaffQueryCriteria;
 import me.zhengjie.service.mapstruct.TrExamStaffMapper;
 import me.zhengjie.utils.FileUtil;
 import me.zhengjie.utils.QueryHelp;
+import me.zhengjie.utils.SecurityUtils;
 import me.zhengjie.utils.ValidationUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -136,6 +138,8 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
         List<TrExamStaffDto> list = new ArrayList<>();
         long total = 0L;
         if (ValidationUtil.isNotEmpty(page.getContent())) {
+            Boolean isAdmin = SecurityUtils.isAdmin();
+            String username = SecurityUtils.getCurrentUsername();
             list = staffMapper.toDto(page.getContent());
             // 根据试卷信息返回考试结果等信息
             list.forEach(this::initStaffTranscript);
@@ -143,6 +147,11 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
             Map<Long, TrainSchedule> scheduleMap = new HashMap<>();
             list.forEach(staff -> {
                 scheduleIds.add(staff.getTrScheduleId());
+                if (staff.getCreateBy().equals(username) || staff.getStaffName().equals(username) || isAdmin) {
+                    staff.setHasEditAuthorized(true);
+                } else {
+                    staff.setHasEditAuthorized(false);
+                }
             });
             initStaffScheduleInfo(list, scheduleIds, scheduleMap);
             total = page.getTotalElements();
@@ -184,6 +193,14 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
     public void update(TrainExamStaff resource) {
         TrainExamStaff entity = staffRepository.findById(resource.getId()).orElseGet(TrainExamStaff::new);
         ValidationUtil.isNull(entity.getId(), "TrainNewStaff", "id", resource.getId());
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if(!isAdmin) {
+            if (!entity.getCreateBy().equals(username) && !entity.getStaffName().equals(username)) {
+                // 非创建者、作者亦非管理员则无权限修改和删除
+                throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+            }
+        }
         TrainExamStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(),resource.getTrScheduleId(), resource.getStaffName());
         if (staff != null && !staff.getId().equals(resource.getId())) {
             throw new EntityExistException(TrainExamStaff.class, "staffName", resource.getStaffName());
@@ -194,6 +211,19 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
+        // 校验是否有删除权限
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        String username = SecurityUtils.getCurrentUsername();
+        if(!isAdmin) {
+            ids.forEach(id->{
+                TrainExamStaff staff = staffRepository.findById(id).orElseGet(TrainExamStaff::new);
+                ValidationUtil.isNull(staff.getId(), "TrainExamStaff", "id", id);
+                if (!staff.getCreateBy().equals(username) && !staff.getStaffName().equals(username)) {
+                    // 非创建者亦非管理员则无权限修改和删除
+                    throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+                }
+            });
+        }
         staffRepository.deleteAllByIdIn(ids);
         // 删除相关附件
         transcriptRepository.deleteByTrExamStaffIdIn(ids);

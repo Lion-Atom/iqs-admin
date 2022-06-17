@@ -91,12 +91,14 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
         Boolean isAdmin = SecurityUtils.isAdmin();
         if (ValidationUtil.isNotEmpty(page.getContent())) {
             list = departFileMapper.toDto(page.getContent());
-            list.forEach(dto -> {
-                // 限制读写权限为：创建者和管理员
-                if (!dto.getCreateBy().equals(curUser) && !isAdmin) {
-                    dto.setHasDownloadAuthority(false);
-                }
-            });
+            if (!isAdmin) {
+                list.forEach(dto -> {
+                    // 限制读写权限为：创建者和管理员
+                    if (!dto.getCreateBy().equals(curUser)) {
+                        dto.setHasDownloadAuthority(false);
+                    }
+                });
+            }
             total = page.getTotalElements();
         }
         map.put("content", list);
@@ -108,6 +110,18 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        if (!isAdmin) {
+            String curUser = SecurityUtils.getCurrentUsername();
+            ids.forEach(id -> {
+                TrExamDepartFile entity = fileRepository.findById(id).orElseGet(TrExamDepartFile::new);
+                ValidationUtil.isNull(entity.getId(), "TrExamDepartFile", "id", id);
+                if (!entity.getCreateBy().equals(curUser)) {
+                    // 非创建者亦非管理员则无权限修改和删除
+                    throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+                }
+            });
+        }
         fileRepository.deleteAllByIdIn(ids);
     }
 
@@ -115,6 +129,13 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
     @Transactional(rollbackFor = Exception.class)
     public void update(TrExamDepartFile resources) {
         TrExamDepartFile departFile = fileRepository.findByDepartIdAndName(resources.getDepartId(), resources.getName());
+        String curUser = SecurityUtils.getCurrentUsername();
+        Boolean isAdmin = SecurityUtils.isAdmin();
+        if (!isAdmin) {
+            if (!resources.getCreateBy().equals(curUser)) {
+                throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
+            }
+        }
         if (departFile != null && !departFile.getId().equals(resources.getId())) {
             throw new BadRequestException("当前考试题库中存在同名文件！请修改名称！");
         }
@@ -200,7 +221,7 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
                     examFiles.add(trExamDepartFile);
                 });
                 fileRepository.saveAll(examFiles);
-                // todo 同步到培训计划附件
+                // todo 同步到培训计划附件--暂无需
                 TrScheduleFile scheduleFile = new TrScheduleFile(
                         trScheduleId,
                         "培训题库",
@@ -223,7 +244,7 @@ public class TrExamDepartFileServiceImpl implements TrExamDepartFileService {
     public List<TrExamDepartFileDto> findByExample(TrainExamFileQueryByExample queryDto) {
         List<TrExamDepartFileDto> list = new ArrayList<>();
         List<TrExamDepartFile> files = fileRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, queryDto, criteriaBuilder));
-       // todo 根据名称、类型和大小去重
+        // 暂无需根据名称、类型和大小去重
         if (ValidationUtil.isNotEmpty(files)) {
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
