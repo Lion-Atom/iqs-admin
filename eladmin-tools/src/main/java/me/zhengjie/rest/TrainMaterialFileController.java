@@ -19,11 +19,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrainMaterialFile;
+import me.zhengjie.service.FileDeptService;
 import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.TrainMaterialFileService;
 import me.zhengjie.service.dto.TrainMaterialFileQueryCriteria;
 import me.zhengjie.service.dto.TrainMaterialQueryByExample;
+import me.zhengjie.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -47,6 +51,7 @@ import java.util.Set;
 public class TrainMaterialFileController {
 
     private final TrainMaterialFileService fileService;
+    private final FileDeptService fileDeptService;
 
     @ApiOperation("导出培训材料信息")
     @GetMapping(value = "/download")
@@ -59,7 +64,7 @@ public class TrainMaterialFileController {
     @GetMapping
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> query(TrainMaterialFileQueryCriteria criteria, Pageable pageable) {
-        return new ResponseEntity<>(fileService.query(criteria,pageable), HttpStatus.OK);
+        return new ResponseEntity<>(fileService.query(criteria, pageable), HttpStatus.OK);
     }
 
     @Log("查询指定部门下培训材料信息")
@@ -67,6 +72,14 @@ public class TrainMaterialFileController {
     @PostMapping("/byExample")
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> queryByExample(@RequestBody TrainMaterialQueryByExample queryDto) {
+        if (!queryDto.getDepartIds().isEmpty()) {
+            queryDto.getDepartIds().forEach(deptId -> {
+                // 先查找是否存在子节点
+                List<FileDept> data = fileDeptService.findByPid(deptId);
+                // 然后把子节点的ID都加入到集合中
+                queryDto.getDepartIds().addAll(fileDeptService.getDeptChildren(data));
+            });
+        }
         return new ResponseEntity<>(fileService.findByExample(queryDto), HttpStatus.OK);
     }
 
@@ -74,10 +87,10 @@ public class TrainMaterialFileController {
     @ApiOperation("上传培训材料信息")
     @PostMapping
     @PreAuthorize("@el.check('material:edit')")
-    public ResponseEntity<Object> uploadFile(@RequestParam("name") String name,@RequestParam("departId") Long departId,@RequestParam("author") String author,
-                                             @RequestParam("version") String version,@RequestParam("isInternal") Boolean isInternal,
-                                             @RequestParam("toolType") String toolType,@RequestParam("fileDesc") String fileDesc,@RequestParam("enabled") Boolean enabled,@RequestParam("file") MultipartFile file) {
-        fileService.uploadFile(name,departId,author,version,isInternal,toolType,fileDesc,enabled, file);
+    public ResponseEntity<Object> uploadFile(@RequestParam("name") String name, @RequestParam("departId") Long departId, @RequestParam("author") String author,
+                                             @RequestParam("version") String version, @RequestParam("isInternal") Boolean isInternal,
+                                             @RequestParam("toolType") String toolType, @RequestParam("fileDesc") String fileDesc, @RequestParam("enabled") Boolean enabled, @RequestParam("file") MultipartFile file) {
+        fileService.uploadFile(name, departId, author, version, isInternal, toolType, fileDesc, enabled, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -85,10 +98,10 @@ public class TrainMaterialFileController {
     @ApiOperation("更新培训材料内容")
     @PostMapping("/updateFile")
     @PreAuthorize("@el.check('material:edit')")
-    public ResponseEntity<Object> updateFile(@RequestParam("id") Long id,@RequestParam("name") String name,@RequestParam("departId") Long departId,@RequestParam("author") String author,
-                                             @RequestParam("version") String version,@RequestParam("isInternal") Boolean isInternal,
-                                             @RequestParam("toolType") String toolType,@RequestParam("fileDesc") String fileDesc,@RequestParam("enabled") Boolean enabled,@RequestParam("file") MultipartFile file) {
-        fileService.updateFile(id,name,departId,author,version,isInternal,toolType,fileDesc,enabled, file);
+    public ResponseEntity<Object> updateFile(@RequestParam("id") Long id, @RequestParam("name") String name, @RequestParam("departId") Long departId, @RequestParam("author") String author,
+                                             @RequestParam("version") String version, @RequestParam("isInternal") Boolean isInternal,
+                                             @RequestParam("toolType") String toolType, @RequestParam("fileDesc") String fileDesc, @RequestParam("enabled") Boolean enabled, @RequestParam("file") MultipartFile file) {
+        fileService.updateFile(id, name, departId, author, version, isInternal, toolType, fileDesc, enabled, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

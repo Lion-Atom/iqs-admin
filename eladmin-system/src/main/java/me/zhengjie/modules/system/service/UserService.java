@@ -160,4 +160,10 @@ public interface UserService {
      * @param pass 加密编码
      */
     void initPass(Long id, String username, String pass);
+
+    /**
+     * @param departIds 部门IDS
+     * @return 员工信息列表
+     */
+    List<User> getByDeptIds(Set<Long> departIds);
 }

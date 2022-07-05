@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.config.RsaProperties;
+import me.zhengjie.domain.FileDept;
 import me.zhengjie.modules.system.domain.Dept;
 import me.zhengjie.modules.system.service.DataService;
 import me.zhengjie.modules.system.domain.User;
@@ -178,8 +179,14 @@ public class UserController {
     @GetMapping("/byDeptId")
     @PreAuthorize("@el.check('user:list','dept:list')")
     public ResponseEntity<Object> byDeptId(@Param("deptId") Long deptId) {
-        List<User> users = userService.getByDeptId(deptId);
-        return new ResponseEntity<>(users, HttpStatus.OK);
+//        List<User> users = userService.getByDeptId(deptId);
+        // 先查找是否存在子节点
+        List<Dept> data = deptService.findByPid(deptId);
+        // 然后把子节点的ID都加入到集合中
+        Set<Long> departIds = new HashSet<>();
+        departIds.add(deptId);
+        departIds.addAll(deptService.getDeptChildren(data));
+        return new ResponseEntity<>(userService.getByDeptIds(departIds), HttpStatus.OK);
     }
 
     @ApiOperation("查询可选审批人")
@@ -193,7 +200,7 @@ public class UserController {
             if (!user.getIsDepartMaster() && user.getSuperiorId() != null) {
                 //非部门管理员同时存在上级
                 criteria.getDeptIds().add(user.getDept().getId());
-                // todo 获取上级部门标识集合,上级可能来自上级部门
+                // 获取上级部门标识集合,上级可能来自上级部门
                 criteria.getDeptIds().addAll(deptService.getSuperiorIds(user.getDept().getId()));
                 list = userService.queryAll(criteria);
                 // 去除自身
@@ -237,8 +244,8 @@ public class UserController {
     public ResponseEntity<Object> initPass(@Validated(User.Update.class) @RequestBody User resources) throws Exception {
         // 默认密码 123456
 //        resources.setPassword(passwordEncoder.encode("123456"));
-        userService.initPass(resources.getId(),resources.getUsername(), passwordEncoder.encode("123456"));
-        return new ResponseEntity<>(resources.getUsername()+"密码已重置为：123456",HttpStatus.ACCEPTED);
+        userService.initPass(resources.getId(), resources.getUsername(), passwordEncoder.encode("123456"));
+        return new ResponseEntity<>(resources.getUsername() + "密码已重置为：123456", HttpStatus.ACCEPTED);
     }
 
     @Log("删除用户")

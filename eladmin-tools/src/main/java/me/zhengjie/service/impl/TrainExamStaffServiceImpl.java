@@ -173,7 +173,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(TrExamStaffDto resource) {
-        TrainExamStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(),resource.getTrScheduleId(), resource.getStaffName());
+        TrainExamStaff staff = staffRepository.findAllByTrScheduleIdAndUserId(resource.getTrScheduleId(), resource.getUserId());
         if (staff != null) {
             throw new EntityExistException(TrainExamStaff.class, "staffName", resource.getStaffName());
         }
@@ -201,7 +201,7 @@ public class TrainExamStaffServiceImpl implements TrainExamStaffService {
                 throw new BadRequestException("No Access!抱歉，您暂无权更改此项！");
             }
         }
-        TrainExamStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(),resource.getTrScheduleId(), resource.getStaffName());
+        TrainExamStaff staff = staffRepository.findAllByTrScheduleIdAndUserId(resource.getTrScheduleId(), resource.getUserId());
         if (staff != null && !staff.getId().equals(resource.getId())) {
             throw new EntityExistException(TrainExamStaff.class, "staffName", resource.getStaffName());
         }

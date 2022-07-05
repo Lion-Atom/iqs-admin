@@ -32,7 +32,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class TrainScheduleQueryCriteria {
 
-    @Query(blurry = "trainTitle,trainContent,department,trainIns,trainer")
+    @Query(blurry = "trainTitle,trainContent,trainIns,trainer")
     private String blurry;
 
     @Query

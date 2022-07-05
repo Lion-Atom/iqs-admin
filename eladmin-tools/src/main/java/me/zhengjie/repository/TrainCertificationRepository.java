@@ -51,20 +51,20 @@ public interface TrainCertificationRepository extends JpaRepository<TrainCertifi
     /**
      * @param certificationType 认证类型
      * @param jobType           工种类型
-     * @param staffName         员工姓名
+     * @param userId            员工ID
      * @return 新员工集合
      */
-    @Query(value = "select * from train_certification where certification_type=?1 and job_type=?2 and staff_name = ?3 ", nativeQuery = true)
-    TrainCertification findAllByCertTypeAndJobTypeAndStaffName(String certificationType, String jobType, String staffName);
+    @Query(value = "select * from train_certification where certification_type=?1 and job_type=?2 and user_id = ?3 ", nativeQuery = true)
+    TrainCertification findAllByCertTypeAndJobTypeAndUserId(String certificationType, String jobType, Long userId);
 
     /**
      * @param certificationType 认证类型
      * @param trScheduleId      培训计划ID
-     * @param staffName         员工姓名
+     * @param userId         员工ID
      * @return 新员工集合
      */
-    @Query(value = "select * from train_certification where certification_type=?1 and train_schedule_id=?2 and staff_name = ?3 ", nativeQuery = true)
-    TrainCertification findAllByCertTypeAndTrScheduleIdAndStaffName(String certificationType, Long trScheduleId, String staffName);
+    @Query(value = "select * from train_certification where certification_type=?1 and train_schedule_id=?2 and user_id = ?3 ", nativeQuery = true)
+    TrainCertification findAllByCertTypeAndTrScheduleIdAndUserId(String certificationType, Long trScheduleId, Long userId);
 
     /**
      * @param b 是否需要提前提醒
@@ -88,14 +88,22 @@ public interface TrainCertificationRepository extends JpaRepository<TrainCertifi
      * @param trScheduleId 培训计划ID
      */
     @Modifying
-    @Query(value = "delete from train_certification where certification_type=?1 and train_schedule_id=?2 and staff_name = ?3 ", nativeQuery = true)
-    void deleteAllByCertTypeAndTrScheduleIdAndStaffName(String certificationType, Long trScheduleId, String staffName);
+    @Query(value = "delete from train_certification where certification_type=?1 and train_schedule_id=?2 and user_id = ?3 ", nativeQuery = true)
+    void deleteAllByCertTypeAndTrScheduleIdAndUserId(String certificationType, Long trScheduleId, Long userId);
 
     /**
      * 删除培训计划下考试证书
+     *
      * @param trScheduleIds 培训计划IDS
      */
     @Modifying
     @Query(value = "delete from train_certification where train_schedule_id in ?1 ", nativeQuery = true)
     void deleteAllByTrScheduleIdIn(Set<Long> trScheduleIds);
+
+    /**
+     * @param userId 员工ID
+     * @return 员工证书信息列表
+     */
+    @Query(value = "select * from train_certification where user_id = ?1 ", nativeQuery = true)
+    List<TrainCertification> findAllByUserId(Long userId);
 }

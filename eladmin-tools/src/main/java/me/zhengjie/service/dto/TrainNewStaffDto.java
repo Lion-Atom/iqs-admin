@@ -35,6 +35,8 @@ public class TrainNewStaffDto extends BaseDTO implements Serializable {
 
     private Long id;
 
+    private Long userId;
+
     private String staffType;
 
     private String staffName;

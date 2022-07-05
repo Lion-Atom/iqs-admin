@@ -50,4 +50,7 @@ public interface ToolsUserRepository extends JpaRepository<ToolsUser, Long>, Jpa
             " AND u.is_depart_master = ?2 " +
             " AND u.enabled = true ", nativeQuery = true)
     ToolsUser findByDeptIdAndIsMaster(Long deptId, Boolean isDepartMaster);
+
+    @Query(value = "SELECT * FROM sys_user WHERE user_id in ?1", nativeQuery = true)
+    List<ToolsUser> findByIdIn(Set<Long> userIds);
 }

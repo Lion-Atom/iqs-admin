@@ -43,19 +43,23 @@ public class TrainCertification extends BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotNull
+    @ApiModelProperty(value = "员工ID")
+    private Long userId;
+
+//    @NotBlank
     @ApiModelProperty(value = "员工姓名")
     private String staffName;
 
-    @NotNull
+//    @NotNull
     @ApiModelProperty(value = "入职日期")
     private Timestamp hireDate;
 
-    @NotNull
+//    @NotNull
     @ApiModelProperty(value = "所属部门ID")
     private Long departId;
 
-    @NotBlank
+//    @NotBlank
     @ApiModelProperty(value = "上级主管")
     private String superior;
 

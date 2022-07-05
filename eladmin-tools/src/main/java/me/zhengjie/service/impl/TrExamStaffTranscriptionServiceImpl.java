@@ -76,7 +76,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
             );
             transcriptRepository.save(transcript);
             // 反查员工培训，确定是否发证书？若需要，当考试通过时候则需要同步证书
-            TrainNewStaff staff = staffTrainRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(examStaff.getDepartId(), examStaff.getTrScheduleId(), examStaff.getStaffName());
+            TrainNewStaff staff = staffTrainRepository.findAllByTrScheduleIdAndUserId(examStaff.getTrScheduleId(), examStaff.getUserId());
             TrainSchedule schedule = trScheduleRepository.findById(examStaff.getTrScheduleId()).orElseGet(TrainSchedule::new);
             ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", examStaff.getTrScheduleId());
             if (examPassed) {
@@ -91,6 +91,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
                 // 通过考试后，若需要发证则生成培训证书记录
                 if (schedule.getIsCert()) {
                     TrainCertification cert = new TrainCertification();
+                    cert.setUserId(staff.getUserId());
                     cert.setStaffName(staff.getStaffName());
                     cert.setHireDate(staff.getHireDate());
                     cert.setDepartId(staff.getDepartId());
@@ -114,7 +115,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
                 staff.setIsAuthorize(false);
                 staff.setReason("尚未通过考试");
                 // 若存在发证信息
-                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndStaffName(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(), examStaff.getStaffName());
+                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndUserId(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(), examStaff.getUserId());
             }
             staffTrainRepository.save(staff);
         } catch (Exception e) {
@@ -143,7 +144,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
             TrainSchedule schedule = trScheduleRepository.findById(examStaff.getTrScheduleId()).orElseGet(TrainSchedule::new);
             ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", examStaff.getTrScheduleId());
             // 3.收回员工培训记录状态变更为考试未通过
-            TrainNewStaff staff = staffTrainRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(examStaff.getDepartId(), examStaff.getTrScheduleId(), examStaff.getStaffName());
+            TrainNewStaff staff = staffTrainRepository.findAllByTrScheduleIdAndUserId(examStaff.getTrScheduleId(), examStaff.getUserId());
             // 考试不通过则更正员工培训未完成原因
             staff.setIsAuthorize(false);
             staff.setReason("尚未通过考试");
@@ -151,7 +152,7 @@ public class TrExamStaffTranscriptionServiceImpl implements TrExamStaffTranscrip
             // 4.若发放证书应当及时召回
             if (schedule.getIsCert()) {
                 // 找回证书
-                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndStaffName(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(), examStaff.getStaffName());
+                certificationRepository.deleteAllByCertTypeAndTrScheduleIdAndUserId(CommonConstants.STAFF_CER_TYPE_JOB, examStaff.getTrScheduleId(), examStaff.getUserId());
             }
         }
         transcriptRepository.deleteAllById(id);

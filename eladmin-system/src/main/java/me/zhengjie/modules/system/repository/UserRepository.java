@@ -214,4 +214,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query(value = "SELECT * FROM sys_user where superior_id = ?1", nativeQuery = true)
     List<User> findBySuperiorId(Long superiorId);
+
+    /**
+     * 查询多部门成员
+     *
+     * @param departIds  部门标识集合
+     * @param enabled 启用状态
+     * @return 部门成员
+     */
+    @Query(value = "SELECT * FROM sys_user where dept_id in ?1 and enabled = ?2", nativeQuery = true)
+    List<User> findByDeptIdInAndEnabled(Set<Long> departIds, Boolean enabled);
 }

@@ -35,6 +35,8 @@ public class TrExamStaffDto extends BaseDTO implements Serializable {
 
     private Long id;
 
+    private Long userId;
+
     private String staffName;
 
     private Long departId;

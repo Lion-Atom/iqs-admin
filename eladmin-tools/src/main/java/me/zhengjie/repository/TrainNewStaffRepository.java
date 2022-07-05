@@ -40,22 +40,20 @@ public interface TrainNewStaffRepository extends JpaRepository<TrainNewStaff, Lo
     void deleteAllByIdIn(Set<Long> ids);
 
     /**
-     * @param departId     部门ID
      * @param trScheduleId 培训计划ID
-     * @param staffName    员工姓名
+     * @param userId       员工ID
      */
     @Modifying
-    @Query(value = "delete from train_new_staff where depart_id = ?1 and train_schedule_id = ?2 and staff_name = ?3 ", nativeQuery = true)
-    void deleteByDepartIdAndTrScheduleIdAndStaffName(Long departId, Long trScheduleId, String staffName);
+    @Query(value = "delete from train_new_staff where train_schedule_id = ?1 and user_id = ?2 ", nativeQuery = true)
+    void deleteByTrScheduleIdAndUserId(Long trScheduleId, Long userId);
 
     /**
-     * @param departId     部门ID
-     * @param staffName    员工姓名
+     * @param userId       员工ID
      * @param trScheduleId 培训计划ID
      * @return 新员工集合
      */
-    @Query(value = "select * from train_new_staff where depart_id = ?1 and train_schedule_id = ?2 and staff_name = ?3 ", nativeQuery = true)
-    TrainNewStaff findAllByDepartIdAndTrScheduleIdAndStaffName(Long departId, Long trScheduleId, String staffName);
+    @Query(value = "select * from train_new_staff where train_schedule_id = ?1 and user_id = ?2 ", nativeQuery = true)
+    TrainNewStaff findAllByTrScheduleIdAndUserId(Long trScheduleId, Long userId);
 
     /**
      * @param trScheduleId 培训计划ID
@@ -67,4 +65,13 @@ public interface TrainNewStaffRepository extends JpaRepository<TrainNewStaff, Lo
     @Modifying
     @Query(value = "delete from train_new_staff where train_schedule_id = ?1", nativeQuery = true)
     void deleteAllByTrScheduleIdIn(Set<Long> ids);
+
+    /**
+     * 查询员工培训记录列表
+     *
+     * @param userId 员工ID
+     * @return 员工培训记录信息列表
+     */
+    @Query(value = "select * from train_new_staff where user_id = ?1 ", nativeQuery = true)
+    List<TrainNewStaff> findAllByUserId(Long userId);
 }

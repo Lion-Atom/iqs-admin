@@ -56,5 +56,5 @@ public interface TrParticipantService {
      * @param example 查询条件
      * @return 参与者信息列表
      */
-    List<TrainParticipant> getByExample(ParticipantQueryByExample example);
+    List<TrainParticipantDto> getByExample(ParticipantQueryByExample example);
 }

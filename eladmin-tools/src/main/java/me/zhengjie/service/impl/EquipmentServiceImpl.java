@@ -174,9 +174,14 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(Equipment resource) {
-        // todo 设备判重
-        resource.setAcceptStatus("待验收");
-        resource.setMaintainStatus(null);
+        // 设备判重
+        if (!resource.getEquipStatus().equals(CommonConstants.EQUIPMENT_STATUS_STOP)) {
+            resource.setAcceptStatus("待验收");
+            resource.setMaintainStatus(null);
+        } else {
+            resource.setAcceptStatus("无法验收");
+            resource.setMaintainStatus(null);
+        }
         equipmentRepository.save(resource);
     }
 

@@ -48,8 +48,11 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             list = trParticipantMapper.toDto(trParts);
             Set<Long> deptIds = new HashSet<>();
             Map<Long, String> deptMap = new HashMap<>();
+            Set<Long> userIds = new HashSet<>();
+            Map<Long, String> userMap = new HashMap<>();
             list.forEach(part -> {
                 deptIds.add(part.getParticipantDepart());
+                userIds.add(part.getUserId());
                 part.setIsExam(schedule.getIsExam());
             });
             List<FileDept> deptList = deptRepository.findByIdIn(deptIds);
@@ -59,6 +62,15 @@ public class TrParticipantServiceImpl implements TrParticipantService {
                 });
                 list.forEach(part -> {
                     part.setParticipantDepartName(deptMap.get(part.getParticipantDepart()));
+                });
+            }
+            List<ToolsUser> users = toolsUserRepository.findByIdIn(userIds);
+            if (ValidationUtil.isNotEmpty(users)) {
+                users.forEach(user -> {
+                    userMap.put(user.getId(), user.getUsername());
+                });
+                list.forEach(part -> {
+                    part.setParticipantName(userMap.get(part.getUserId()));
                 });
             }
         }
@@ -74,9 +86,11 @@ public class TrParticipantServiceImpl implements TrParticipantService {
         if (diff < 1) {
             throw new BadRequestException("当前【" + schedule.getTrainTitle() + "】已满员，请勿添加！");
         }
-        TrainParticipant participant = trParticipantRepository.findByTrScheduleIdAndDepartIdAndPartName(schedule.getId(), resource.getParticipantDepart(), resource.getParticipantName());
+        ToolsUser user = toolsUserRepository.findById(resource.getUserId()).orElseGet(ToolsUser::new);
+        ValidationUtil.isNull(user.getId(), "ToolsUser", "id", resource.getUserId());
+        TrainParticipant participant = trParticipantRepository.findByTrScheduleIdAndUserId(schedule.getId(), resource.getUserId());
         if (participant != null) {
-            throw new EntityExistException(TrainParticipant.class, "participantName", resource.getParticipantName());
+            throw new EntityExistException(TrainParticipant.class, "participantName", user.getUsername());
         }
         if (resource.getIsValid()) {
             schedule.setCurNum(schedule.getCurNum() + 1);
@@ -91,9 +105,10 @@ public class TrParticipantServiceImpl implements TrParticipantService {
 
     private void initExamInfo(TrainParticipant resource, TrainSchedule schedule) {
         if (schedule.getIsExam()) {
+            ToolsUserDto userDto = getToolsUserDto(resource);
             // 若需要考试则自动生成相关考试内容
             // 1.判断/生成考试所在部门
-            TrainExamDepart examDepart = examDepartRepository.findByDepartId(resource.getParticipantDepart());
+            TrainExamDepart examDepart = examDepartRepository.findByDepartId(userDto.getDeptId());
             if (examDepart != null) {
                 // 若该部门未启用则置为启用状态
                 if (!examDepart.getEnabled()) {
@@ -102,7 +117,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
                 }
             } else {
                 TrainExamDepart newDept = new TrainExamDepart();
-                newDept.setDepartId(resource.getParticipantDepart());
+                newDept.setDepartId(userDto.getDeptId());
                 newDept.setEnabled(true);
                 examDepartRepository.save(newDept);
             }
@@ -123,9 +138,11 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             if (diff < 1) {
                 throw new BadRequestException("当前【" + schedule.getTrainTitle() + "】已满员，请勿添加！");
             } else {
-                TrainParticipant participant = trParticipantRepository.findByTrScheduleIdAndDepartIdAndPartName(schedule.getId(), resource.getParticipantDepart(), resource.getParticipantName());
+                TrainParticipant participant = trParticipantRepository.findByTrScheduleIdAndUserId(schedule.getId(), resource.getUserId());
+                ToolsUser user = toolsUserRepository.findById(resource.getUserId()).orElseGet(ToolsUser::new);
+                ValidationUtil.isNull(user.getId(), "ToolsUser", "id", resource.getUserId());
                 if (participant != null && !participant.getId().equals(resource.getId())) {
-                    throw new EntityExistException(TrainParticipant.class, "participantName", resource.getParticipantName());
+                    throw new EntityExistException(TrainParticipant.class, "participantName", user.getUsername());
                 }
                 schedule.setCurNum(schedule.getCurNum() + 1);
                 trScheduleRepository.save(schedule);
@@ -138,18 +155,20 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             schedule.setCurNum(schedule.getCurNum() - 1);
             trScheduleRepository.save(schedule);
             // 参与成功后撤销则自动撤回相关培训内容
-            staffRepository.deleteByDepartIdAndTrScheduleIdAndStaffName(resource.getParticipantDepart(), resource.getTrScheduleId(), resource.getParticipantName());
+            staffRepository.deleteByTrScheduleIdAndUserId(resource.getTrScheduleId(), resource.getUserId());
             // 若需要考试则自动删除已生成的相关考试内容
-            examStaffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getParticipantDepart(), resource.getTrScheduleId(), resource.getParticipantName());
+            examStaffRepository.deleteAllByTrScheduleIdAndUserId(resource.getTrScheduleId(), resource.getUserId());
         }
         trParticipantRepository.save(resource);
     }
 
+
     private void initTrainStaffInfo(TrainParticipant resource, TrainSchedule schedule) {
         ToolsUserDto userDto = getToolsUserDto(resource);
         TrainNewStaff staff = new TrainNewStaff();
-        staff.setStaffName(resource.getParticipantName());
-        staff.setDepartId(resource.getParticipantDepart());
+        staff.setUserId(resource.getUserId());
+        staff.setStaffName(userDto.getUsername());
+        staff.setDepartId(userDto.getDeptId());
         staff.setTrScheduleId(schedule.getId());
         staff.setStaffType(userDto.getStaffType());
         staff.setJobType(userDto.getJobType());
@@ -160,7 +179,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
         staff.setTeam(userDto.getTeam());
         staff.setJobNum(userDto.getJobNum());
         staff.setIsFinished(false);
-        if(schedule.getIsExam()) {
+        if (schedule.getIsExam()) {
             staff.setReason("培训尚未开始，待考试");
         } else {
             staff.setReason("培训尚未开始");
@@ -172,7 +191,8 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     private void initExamStaffInfo(TrainParticipant resource, TrainSchedule schedule) {
         ToolsUserDto userDto = getToolsUserDto(resource);
         TrainExamStaff examStaff = new TrainExamStaff();
-        examStaff.setDepartId(resource.getParticipantDepart());
+        examStaff.setUserId(resource.getUserId());
+        examStaff.setDepartId(userDto.getDeptId());
         examStaff.setHireDate(userDto.getHireDate());
         examStaff.setStaffType(userDto.getStaffType());
         examStaff.setJobNum(userDto.getJobNum());
@@ -181,18 +201,22 @@ public class TrParticipantServiceImpl implements TrParticipantService {
         examStaff.setSuperior(userDto.getSuperiorName());
         examStaff.setWorkshop(userDto.getWorkshop());
         examStaff.setTeam(userDto.getTeam());
-        examStaff.setStaffName(resource.getParticipantName());
+        examStaff.setStaffName(userDto.getUsername());
         examStaff.setTrScheduleId(schedule.getId());
         examStaff.setIsAuthorize(false);
         examStaffRepository.save(examStaff);
     }
 
     private ToolsUserDto getToolsUserDto(TrainParticipant resource) {
-        ToolsUser user = toolsUserRepository.findByUsername(resource.getParticipantName());
+        ToolsUser user = toolsUserRepository.findById(resource.getUserId()).orElseGet(ToolsUser::new);
+        ValidationUtil.isNull(user.getId(), "ToolsUser", "id", resource.getUserId());
         ToolsUserDto userDto = toolsUserMapper.toDto(user);
         if (ValidationUtil.isNotEmpty(Collections.singletonList(user.getJobs()))) {
             List<ToolsJob> jobList = new ArrayList<>(user.getJobs());
             userDto.setJobName(jobList.get(0).getName());
+        }
+        if (user.getDept() != null) {
+            userDto.setDeptId(user.getDept().getId());
         }
         if (user.getSuperiorId() != null) {
             ToolsUser sup = toolsUserRepository.findById(user.getSuperiorId()).orElseGet(ToolsUser::new);
@@ -254,7 +278,26 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     }
 
     @Override
-    public List<TrainParticipant> getByExample(ParticipantQueryByExample example) {
-        return trParticipantRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, example, criteriaBuilder));
+    public List<TrainParticipantDto> getByExample(ParticipantQueryByExample example) {
+        List<TrainParticipantDto> list = new ArrayList<>();
+        List<TrainParticipant> participants = trParticipantRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, example, criteriaBuilder));
+        if (ValidationUtil.isNotEmpty(participants)) {
+            list = trParticipantMapper.toDto(participants);
+            Set<Long> userIds = new HashSet<>();
+            Map<Long, String> userMap = new HashMap<>();
+            list.forEach(part -> {
+                userIds.add(part.getUserId());
+            });
+            List<ToolsUser> users = toolsUserRepository.findByIdIn(userIds);
+            if (ValidationUtil.isNotEmpty(users)) {
+                users.forEach(user -> {
+                    userMap.put(user.getId(), user.getUsername());
+                });
+                list.forEach(part -> {
+                    part.setParticipantName(userMap.get(part.getUserId()));
+                });
+            }
+        }
+        return list;
     }
 }

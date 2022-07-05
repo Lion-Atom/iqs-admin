@@ -139,14 +139,14 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         ValidationUtil.isNull(entity.getId(), "TrainCertification", "id", resource.getId());
         TrainCertification trainCertification = null;
         if (resource.getJobType() != null && CommonConstants.STAFF_CER_TYPE_LIST.contains(resource.getCertificationType())) {
-            trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndStaffName(resource.getCertificationType(), resource.getJobType(), resource.getStaffName());
+            trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndUserId(resource.getCertificationType(), resource.getJobType(), resource.getUserId());
         } else if (resource.getTrScheduleId() != null && resource.getCertificationType().equals(CommonConstants.STAFF_CER_TYPE_JOB)) {
-            trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndStaffName(resource.getCertificationType(), resource.getTrScheduleId(), resource.getStaffName());
+                trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndUserId(resource.getCertificationType(), resource.getTrScheduleId(), resource.getUserId());
         }
         if (trainCertification != null && !trainCertification.getId().equals(resource.getId())) {
             throw new EntityExistException(TrainCertification.class, "staffName", resource.getStaffName());
         }
-        if (entity.getIsRemind() == null || !entity.getIsRemind()) {
+        if (resource.getIsRemind() == null || !resource.getIsRemind()) {
             resource.setRemindDays(null);
         }
         judgeCerStatus(resource);
@@ -158,9 +158,9 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
     public void create(TrainCertificationDto dto) {
         TrainCertification trainCertification = null;
         if (dto.getJobType() != null && CommonConstants.STAFF_CER_TYPE_LIST.contains(dto.getCertificationType())) {
-            trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndStaffName(dto.getCertificationType(), dto.getJobType(), dto.getStaffName());
+            trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndUserId(dto.getCertificationType(), dto.getJobType(), dto.getUserId());
         } else if (dto.getTrScheduleId() != null && dto.getCertificationType().equals(CommonConstants.STAFF_CER_TYPE_JOB)) {
-            trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndStaffName(dto.getCertificationType(), dto.getTrScheduleId(), dto.getStaffName());
+            trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndUserId(dto.getCertificationType(), dto.getTrScheduleId(), dto.getUserId());
         }
         if (trainCertification != null) {
             throw new EntityExistException(TrainCertification.class, "staffName", dto.getStaffName());

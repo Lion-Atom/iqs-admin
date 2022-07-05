@@ -19,7 +19,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.annotation.Log;
+import me.zhengjie.domain.FileDept;
 import me.zhengjie.domain.TrExamDepartFile;
+import me.zhengjie.service.FileDeptService;
 import me.zhengjie.service.TrExamDepartFileService;
 import me.zhengjie.service.TrNewStaffFileService;
 import me.zhengjie.service.dto.TrExamDepartFileQueryCriteria;
@@ -49,6 +51,7 @@ import java.util.Set;
 public class TrExamDepartFileController {
 
     private final TrExamDepartFileService fileService;
+    private final FileDeptService fileDeptService;
 
     @ApiOperation("导出认证证书数据")
     @GetMapping(value = "/download")
@@ -69,6 +72,14 @@ public class TrExamDepartFileController {
     @PostMapping("/byExample")
     @PreAuthorize("@el.check('train:list')")
     public ResponseEntity<Object> queryByExample(@RequestBody TrainExamFileQueryByExample queryDto) {
+        if (!queryDto.getDepartIds().isEmpty()) {
+            queryDto.getDepartIds().forEach(deptId -> {
+                // 先查找是否存在子节点
+                List<FileDept> data = fileDeptService.findByPid(deptId);
+                // 然后把子节点的ID都加入到集合中
+                queryDto.getDepartIds().addAll(fileDeptService.getDeptChildren(data));
+            });
+        }
         return new ResponseEntity<>(fileService.findByExample(queryDto), HttpStatus.OK);
     }
 

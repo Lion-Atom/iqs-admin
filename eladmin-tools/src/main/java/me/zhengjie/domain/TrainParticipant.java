@@ -55,10 +55,9 @@ public class TrainParticipant extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "所属部门")
     private Long participantDepart;
 
-    @NotBlank
-    @Column(name = "participant_name")
-    @ApiModelProperty(value = "参与者")
-    private String participantName;
+    @NotNull
+    @ApiModelProperty(value = "参与者ID")
+    private Long userId;
 
     @NotNull
     @Column(name = "is_valid")

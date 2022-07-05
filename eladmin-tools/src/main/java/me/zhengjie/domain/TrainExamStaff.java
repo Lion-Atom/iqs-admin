@@ -31,6 +31,10 @@ public class TrainExamStaff extends BaseEntity implements Serializable {
     private Long id;
 
     @NotNull
+    @ApiModelProperty(value = "员工ID")
+    private Long userId;
+
+    @NotNull
     @ApiModelProperty(value = "员工姓名")
     private String staffName;
 

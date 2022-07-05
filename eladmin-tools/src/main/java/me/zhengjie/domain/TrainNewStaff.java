@@ -43,6 +43,10 @@ public class TrainNewStaff extends BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @ApiModelProperty(value = "员工ID")
+    private Long userId;
+
     @NotBlank
     @ApiModelProperty(value = "员工分类")
     private String staffType;

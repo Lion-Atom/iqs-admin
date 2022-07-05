@@ -36,6 +36,8 @@ public class TrainCertificationDto extends BaseDTO implements Serializable {
 
     private Long id;
 
+    private Long userId;
+
     private String staffName;
 
     private Timestamp hireDate;

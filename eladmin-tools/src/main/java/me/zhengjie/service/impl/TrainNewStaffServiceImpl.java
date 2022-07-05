@@ -159,11 +159,12 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
     public void update(TrainNewStaff resource) {
         TrainNewStaff entity = staffRepository.findById(resource.getId()).orElseGet(TrainNewStaff::new);
         ValidationUtil.isNull(entity.getId(), "TrainNewStaff", "id", resource.getId());
-        TrainNewStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(), resource.getTrScheduleId(), resource.getStaffName());
+        TrainNewStaff staff = staffRepository.findAllByTrScheduleIdAndUserId(resource.getTrScheduleId(), resource.getUserId());
         if (staff != null && !staff.getId().equals(resource.getId())) {
             throw new EntityIDExistException(TrainNewStaff.class, "trScheduleId", resource.getTrScheduleId().toString());
         }
-        if (entity.getIsFinished()) {
+        // 若已完成则重置未完成原因为null
+        if (resource.getIsFinished()) {
             resource.setReason(null);
         } else {
             fileRepository.deleteByTrNewStaffId(resource.getId());
@@ -174,7 +175,7 @@ public class TrainNewStaffServiceImpl implements TrainNewStaffService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(TrainNewStaffDto resource) {
-        TrainNewStaff staff = staffRepository.findAllByDepartIdAndTrScheduleIdAndStaffName(resource.getDepartId(), resource.getTrScheduleId(), resource.getStaffName());
+        TrainNewStaff staff = staffRepository.findAllByTrScheduleIdAndUserId(resource.getTrScheduleId(), resource.getUserId());
         if (staff != null) {
             throw new EntityIDExistException(TrainNewStaff.class, "trScheduleId", resource.getTrScheduleId().toString());
         }

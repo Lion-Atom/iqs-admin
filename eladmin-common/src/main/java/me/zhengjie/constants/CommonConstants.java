@@ -129,6 +129,11 @@ public class CommonConstants {
     /**
      * 8D状态-待审核
      */
+    public static final String D_STATUS_AUDIT_AGAIN = "再提交";
+
+    /**
+     * 8D状态-待审核
+     */
     public static final String D_STATUS_REJECT = "驳回";
 
     /**
@@ -861,5 +866,10 @@ public class CommonConstants {
      * 培训计划附件类型-培训材料
      */
     public static final String TRAIN_SCHEDULE_FILE_TYPE_EXAM = "培训试题";
+
+    /**
+     * 设备状态 - 停用
+     */
+    public static final String EQUIPMENT_STATUS_STOP = "停用";
 
 }

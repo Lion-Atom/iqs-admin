@@ -18,10 +18,13 @@ package me.zhengjie.modules.system.service.impl;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.config.FileProperties;
 import me.zhengjie.constants.CommonConstants;
+import me.zhengjie.domain.*;
 import me.zhengjie.exception.BadRequestException;
+import me.zhengjie.modules.quartz.task.TestTask;
 import me.zhengjie.modules.security.service.OnlineUserService;
 import me.zhengjie.modules.security.service.UserCacheClean;
 import me.zhengjie.modules.system.domain.Dept;
+import me.zhengjie.modules.system.domain.Job;
 import me.zhengjie.modules.system.domain.User;
 import me.zhengjie.exception.EntityExistException;
 import me.zhengjie.exception.EntityNotFoundException;
@@ -30,6 +33,12 @@ import me.zhengjie.modules.system.repository.UserRepository;
 import me.zhengjie.modules.system.service.UserService;
 import me.zhengjie.modules.system.service.dto.*;
 import me.zhengjie.modules.system.service.mapstruct.UserMapper;
+import me.zhengjie.repository.ToolsUserRepository;
+import me.zhengjie.repository.TrainCertificationRepository;
+import me.zhengjie.repository.TrainExamStaffRepository;
+import me.zhengjie.repository.TrainNewStaffRepository;
+import me.zhengjie.service.dto.ToolsUserDto;
+import me.zhengjie.service.mapstruct.ToolsUserMapper;
 import me.zhengjie.utils.*;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -62,6 +71,9 @@ public class UserServiceImpl implements UserService {
     private final UserCacheClean userCacheClean;
     private final OnlineUserService onlineUserService;
     private final DeptRepository deptRepository;
+    private final TrainNewStaffRepository staffTrainRepository;
+    private final TrainExamStaffRepository examStaffRepository;
+    private final TrainCertificationRepository trainCertRepository;
 
     @Override
     public Map<String, Object> queryAll(UserQueryCriteria criteria, Pageable pageable) {
@@ -223,6 +235,105 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         // 清除缓存
         delCaches(user.getId(), user.getUsername());
+        // 同步更新员工信息
+        Long userId = resources.getId();
+        UserDto userDto = getToolsUserDto(user);
+        // 同步更新培训记录
+        syncUserInfo(userId, userDto);
+    }
+
+    private void syncUserInfo(Long userId, UserDto userDto) {
+        // 同步更新员工培训记录
+        syncTrNewStaffInfo(userId, userDto);
+        // 同步更新员工考试信息
+        syncExamStaffInfo(userId, userDto);
+        // 同步更新员工证书信息
+        syncStaffCertInfo(userId, userDto);
+    }
+
+    private void syncStaffCertInfo(Long userId, UserDto userDto) {
+        List<TrainCertification> certs = trainCertRepository.findAllByUserId(userId);
+        if (ValidationUtil.isNotEmpty(certs)) {
+            certs.forEach(cert -> {
+//                cert.setStaffType(user.getStaffType());
+                cert.setJobType(userDto.getJobType());
+                cert.setStaffName(userDto.getUsername());
+                cert.setHireDate(userDto.getHireDate());
+                cert.setDepartId(userDto.getDeptId());
+//                cert.setWorkshop(user.getWorkshop());
+//                cert.setTeam(user.getTeam());
+                cert.setSuperior(userDto.getSuperiorName());
+                cert.setJobNum(userDto.getJobNum());
+                cert.setJobName(userDto.getJobName());
+            });
+            trainCertRepository.saveAll(certs);
+        }
+    }
+
+    private void syncExamStaffInfo(Long userId, UserDto userDto) {
+        List<TrainExamStaff> examStaffs = examStaffRepository.findAllByUserId(userId);
+        if (ValidationUtil.isNotEmpty(examStaffs)) {
+            examStaffs.forEach(examStaff -> {
+                examStaff.setStaffType(userDto.getStaffType());
+                examStaff.setJobType(userDto.getJobType());
+                examStaff.setStaffName(userDto.getUsername());
+                examStaff.setHireDate(userDto.getHireDate());
+                examStaff.setDepartId(userDto.getDeptId());
+                examStaff.setWorkshop(userDto.getWorkshop());
+                examStaff.setTeam(userDto.getTeam());
+                examStaff.setSuperior(userDto.getSuperiorName());
+                examStaff.setJobNum(userDto.getJobNum());
+                examStaff.setJobName(userDto.getJobName());
+            });
+            examStaffRepository.saveAll(examStaffs);
+        }
+    }
+
+    private void syncTrNewStaffInfo(Long userId, UserDto userDto) {
+        List<TrainNewStaff> newStaffList = staffTrainRepository.findAllByUserId(userId);
+        if (ValidationUtil.isNotEmpty(newStaffList)) {
+            newStaffList.forEach(newStaff -> {
+                newStaff.setStaffType(userDto.getStaffType());
+                newStaff.setJobType(userDto.getJobType());
+                newStaff.setStaffName(userDto.getUsername());
+                newStaff.setHireDate(userDto.getHireDate());
+                newStaff.setDepartId(userDto.getDeptId());
+                newStaff.setWorkshop(userDto.getWorkshop());
+                newStaff.setTeam(userDto.getTeam());
+                newStaff.setSuperior(userDto.getSuperiorName());
+                newStaff.setJobNum(userDto.getJobNum());
+                newStaff.setJobName(userDto.getJobName());
+            });
+            staffTrainRepository.saveAll(newStaffList);
+        }
+    }
+
+    private UserDto getToolsUserDto(User entity) {
+        User user = userRepository.findById(entity.getId()).orElseGet(User::new);
+        ValidationUtil.isNull(user.getId(), "User", "id", entity.getId());
+        UserDto userDto = userMapper.toDto(user);
+        if (ValidationUtil.isNotEmpty(Collections.singletonList(user.getJobs()))) {
+            List<Job> jobList = new ArrayList<>(user.getJobs());
+            userDto.setJobName(jobList.get(0).getName());
+        }
+        if (user.getDept() != null) {
+            userDto.setDeptId(user.getDept().getId());
+        }
+        if (user.getSuperiorId() != null) {
+            User sup = userRepository.findById(user.getSuperiorId()).orElseGet(User::new);
+            ValidationUtil.isNull(sup.getId(), "User", "id", user.getSuperiorId());
+            userDto.setSuperiorName(sup.getUsername());
+        } else if (user.getDept() != null) {
+            if (user.getDept().getPid() != null) {
+                List<User> sups = userRepository.findByDeptIdAndIsMaster(user.getDept().getPid(), true);
+                if (ValidationUtil.isNotEmpty(sups)) {
+                    userDto.setSuperiorName(sups.get(0).getUsername());
+                }
+            } else {
+                userDto.setSuperiorName(userDto.getUsername());
+            }
+        }
+        return userDto;
     }
 
     @Override
@@ -352,6 +463,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getByDeptIds(Set<Long> departIds) {
+        return userRepository.findByDeptIdInAndEnabled(departIds, true);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> updateAvatar(MultipartFile multipartFile) {
         User user = userRepository.findByUsername(SecurityUtils.getCurrentUsername());
@@ -384,6 +500,8 @@ public class UserServiceImpl implements UserService {
             List<String> roles = userDTO.getRoles().stream().map(RoleSmallDto::getName).collect(Collectors.toList());
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("用户名", userDTO.getUsername());
+            map.put("工号", userDTO.getJobNum());
+            map.put("员工类型", userDTO.getStaffType());
             map.put("角色", roles);
             map.put("部门", userDTO.getDept().getName());
             map.put("岗位", userDTO.getJobs().stream().map(JobSmallDto::getName).collect(Collectors.toList()));

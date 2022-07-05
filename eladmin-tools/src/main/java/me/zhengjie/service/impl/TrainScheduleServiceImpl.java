@@ -14,6 +14,7 @@ import me.zhengjie.service.mapstruct.ToolsUserMapper;
 import me.zhengjie.service.mapstruct.TrParticipantMapper;
 import me.zhengjie.service.mapstruct.TrainScheduleMapper;
 import me.zhengjie.utils.*;
+import org.apache.catalina.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,16 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         if (ValidationUtil.isNotEmpty(schedules)) {
             list = scheduleMapper.toDto(schedules);
             // todo 或填充附件信息、与会人员信息
+            list.forEach(schedule->{
+                if (!schedule.getBindDepts().isEmpty()) {
+                    // 处理涉及部门
+                    List<String> deptNames = new ArrayList<>();
+                    schedule.getBindDepts().forEach(dept -> {
+                        deptNames.add(dept.getName());
+                    });
+                    schedule.setBindDeptStr(StringUtils.join(deptNames, ","));
+                }
+            });
         }
         return list;
     }
@@ -179,8 +190,9 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
 
     private void initExamInfo(TrainParticipant resource, TrainSchedule schedule) {
         // 若需要考试则自动生成相关考试内容
+        ToolsUserDto userDto = getToolsUserDto(resource);
         // 1.判断/生成考试所在部门
-        TrainExamDepart examDepart = examDepartRepository.findByDepartId(resource.getParticipantDepart());
+        TrainExamDepart examDepart = examDepartRepository.findByDepartId(userDto.getDeptId());
         if (examDepart != null) {
             // 若该部门未启用则置为启用状态
             if (!examDepart.getEnabled()) {
@@ -189,7 +201,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
             }
         } else {
             TrainExamDepart newDept = new TrainExamDepart();
-            newDept.setDepartId(resource.getParticipantDepart());
+            newDept.setDepartId(userDto.getDeptId());
             newDept.setEnabled(true);
             examDepartRepository.save(newDept);
         }
@@ -200,7 +212,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private void initExamStaffInfo(TrainParticipant resource, TrainSchedule schedule) {
         ToolsUserDto userDto = getToolsUserDto(resource);
         TrainExamStaff examStaff = new TrainExamStaff();
-        examStaff.setDepartId(resource.getParticipantDepart());
+        examStaff.setDepartId(userDto.getDeptId());
         examStaff.setHireDate(userDto.getHireDate());
         examStaff.setStaffType(userDto.getStaffType());
         examStaff.setJobNum(userDto.getJobNum());
@@ -209,18 +221,22 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         examStaff.setSuperior(userDto.getSuperiorName());
         examStaff.setWorkshop(userDto.getWorkshop());
         examStaff.setTeam(userDto.getTeam());
-        examStaff.setStaffName(resource.getParticipantName());
+        examStaff.setStaffName(userDto.getUsername());
         examStaff.setTrScheduleId(schedule.getId());
         examStaff.setIsAuthorize(false);
         examStaffRepository.save(examStaff);
     }
 
     private ToolsUserDto getToolsUserDto(TrainParticipant resource) {
-        ToolsUser user = toolsUserRepository.findByUsername(resource.getParticipantName());
+        ToolsUser user = toolsUserRepository.findById(resource.getUserId()).orElseGet(ToolsUser::new);
+        ValidationUtil.isNull(user.getId(), "ToolsUser", "id", resource.getUserId());
         ToolsUserDto userDto = toolsUserMapper.toDto(user);
         if (ValidationUtil.isNotEmpty(Collections.singletonList(user.getJobs()))) {
             List<ToolsJob> jobList = new ArrayList<>(user.getJobs());
             userDto.setJobName(jobList.get(0).getName());
+        }
+        if(user.getDept()!=null) {
+            userDto.setDeptId(user.getDept().getId());
         }
         if (user.getSuperiorId() != null) {
             ToolsUser sup = toolsUserRepository.findById(user.getSuperiorId()).orElseGet(ToolsUser::new);
@@ -280,14 +296,14 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
                 file.setTrScheduleId(newSchedule.getId());
             });
             fileRepository.saveAll(resource.getMaterialFileList());
-            // todo 同步培训材料
+            // todo 同步培训材料 -- 已废除
         }
         if (ValidationUtil.isNotEmpty(resource.getExamFileList())) {
             resource.getExamFileList().forEach(file -> {
                 file.setTrScheduleId(newSchedule.getId());
             });
             fileRepository.saveAll(resource.getExamFileList());
-            // todo 同步培训题库
+            // todo 同步培训题库 --已废除
         }
     }
 
