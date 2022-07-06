@@ -189,6 +189,24 @@ public class UserController {
         return new ResponseEntity<>(userService.getByDeptIds(departIds), HttpStatus.OK);
     }
 
+    @ApiOperation("根据部门ID获取部门成员")
+    @PostMapping("/byDeptIds")
+    @PreAuthorize("@el.check('user:list','dept:list')")
+    public ResponseEntity<Object> byDeptId(@RequestBody List<Long> deptIds) {
+//        List<User> users = userService.getByDeptId(deptId);
+        // 先查找是否存在子节点
+        Set<Long> departIds = new HashSet<>();
+        if(ValidationUtil.isNotEmpty(deptIds)) {
+            deptIds.forEach(deptId->{
+                List<Dept> data = deptService.findByPid(deptId);
+                // 然后把子节点的ID都加入到集合中
+                departIds.add(deptId);
+                departIds.addAll(deptService.getDeptChildren(data));
+            });
+        }
+        return new ResponseEntity<>(userService.getByDeptIds(departIds), HttpStatus.OK);
+    }
+
     @ApiOperation("查询可选审批人")
     @GetMapping("/approvers")
     @PreAuthorize("@el.check('user:list','dept:list')")

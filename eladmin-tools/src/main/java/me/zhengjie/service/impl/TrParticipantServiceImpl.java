@@ -9,6 +9,7 @@ import me.zhengjie.service.TrParticipantService;
 import me.zhengjie.service.dto.ParticipantQueryByExample;
 import me.zhengjie.service.dto.ToolsUserDto;
 import me.zhengjie.service.dto.TrainParticipantDto;
+import me.zhengjie.service.dto.TrainParticipantDtoV2;
 import me.zhengjie.service.mapstruct.ToolsUserMapper;
 import me.zhengjie.service.mapstruct.TrParticipantMapper;
 import me.zhengjie.utils.QueryHelp;
@@ -299,5 +300,67 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             }
         }
         return list;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchSaveV2(List<TrainParticipantDtoV2> resources) {
+        List<TrainParticipant> list = new ArrayList<>();
+        if (ValidationUtil.isNotEmpty(resources)) {
+            Long scheduleId = resources.get(0).getTrScheduleId();
+            // 删除旧数据
+            Set<Long> scheduleIds = new HashSet<>();
+            scheduleIds.add(scheduleId);
+            trParticipantRepository.deleteAllByTrScheduleIdIn(scheduleIds);
+            staffRepository.deleteAllByTrScheduleIdIn(scheduleIds);
+
+            TrainSchedule schedule = trScheduleRepository.findById(scheduleId).orElseGet(TrainSchedule::new);
+            ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", scheduleId);
+            int total = schedule.getTotalNum();
+            Set<Long> userIds = new HashSet<>();
+            Map<Long, Long> userDeptMap = new HashMap<>();
+            resources.forEach(dto -> {
+                // todo添加员工所属部门及isValid = true
+                userIds.add(dto.getUserId());
+            });
+            List<ToolsUser> users = toolsUserRepository.findByIdIn(userIds);
+            if (ValidationUtil.isNotEmpty(users)) {
+                users.forEach(user -> {
+                    if (user.getDept() != null) {
+                        userDeptMap.put(user.getId(), user.getDept().getId());
+                    }
+                });
+            }
+            resources.forEach(dto -> {
+                TrainParticipant part = new TrainParticipant();
+                part.setIsValid(true);
+                part.setUserId(dto.getUserId());
+                part.setParticipantDepart(userDeptMap.get(dto.getUserId()));
+                part.setTrScheduleId(dto.getTrScheduleId());
+                list.add(part);
+            });
+            // 批量人员姓名校准不好判断，前端配合后端已控制
+            Iterator<TrainParticipant> iterator = list.iterator();
+            int toPartNum = 0;
+            while (iterator.hasNext()) {
+                TrainParticipant participant = iterator.next();
+                if (!participant.getIsValid()) {
+                    iterator.remove();
+                } else {
+                    toPartNum++;
+                    // 参与成功则自动生成相关培训内容
+                    initTrainStaffInfo(participant, schedule);
+                    // 若需要考试则自动生成相关考试内容
+                    initExamInfo(participant, schedule);
+                }
+            }
+            if (total < toPartNum) {
+                throw new BadRequestException("当前【" + schedule.getTrainTitle() + "】已超员，请勿添加！");
+            } else {
+                schedule.setCurNum(toPartNum);
+                trScheduleRepository.save(schedule);
+            }
+            trParticipantRepository.saveAll(list);
+        }
     }
 }

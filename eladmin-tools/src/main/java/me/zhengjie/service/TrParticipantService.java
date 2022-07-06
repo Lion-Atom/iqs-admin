@@ -3,6 +3,7 @@ package me.zhengjie.service;
 import me.zhengjie.domain.TrainParticipant;
 import me.zhengjie.service.dto.ParticipantQueryByExample;
 import me.zhengjie.service.dto.TrainParticipantDto;
+import me.zhengjie.service.dto.TrainParticipantDtoV2;
 
 import java.util.List;
 import java.util.Set;
@@ -57,4 +58,10 @@ public interface TrParticipantService {
      * @return 参与者信息列表
      */
     List<TrainParticipantDto> getByExample(ParticipantQueryByExample example);
+
+
+    /**
+     * @param resources 拟参与者信息
+     */
+    void batchSaveV2(List<TrainParticipantDtoV2> resources);
 }

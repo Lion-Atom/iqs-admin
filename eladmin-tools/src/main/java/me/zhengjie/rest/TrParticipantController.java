@@ -8,6 +8,7 @@ import me.zhengjie.domain.TrainParticipant;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.service.TrParticipantService;
 import me.zhengjie.service.dto.ParticipantQueryByExample;
+import me.zhengjie.service.dto.TrainParticipantDtoV2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -68,6 +69,15 @@ public class TrParticipantController {
             }
         });
         trParticipantService.batchSave(resources);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Log("新增培训计划参与者信息V2")
+    @ApiOperation("新增培训计划参与者信息V2")
+    @PostMapping("/batchSaveV2")
+    @PreAuthorize("@el.check('schedule:edit')")
+    public ResponseEntity<Object> batchSaveV2(@Validated @RequestBody List<TrainParticipantDtoV2> resources) {
+        trParticipantService.batchSaveV2(resources);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
