@@ -50,18 +50,8 @@ public class EquipmentFile extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "设备ID")
     private Long equipmentId;
 
-    @ApiModelProperty(value = "保养/验收日期")
-    private Timestamp maintainDate;
-
     @ApiModelProperty(value = "文件所属")
     private String fileType;
-
-    @NotBlank
-    @ApiModelProperty(value = "校准结果是否合格")
-    private String caliResult;
-
-    @ApiModelProperty(value = "不合格原因描述")
-    private String failDesc;
 
     @ApiModelProperty(value = "真实文件名")
     private String realName;
@@ -81,13 +71,10 @@ public class EquipmentFile extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "大小")
     private String size;
 
-    public EquipmentFile(Long equipmentId,Timestamp maintainDate, String fileType, String caliResult, String failDesc, String realName,
+    public EquipmentFile(Long equipmentId,String fileType, String realName,
                          String name, String suffix, String path, String type, String size) {
         this.equipmentId = equipmentId;
-        this.maintainDate = maintainDate;
         this.fileType = fileType;
-        this.caliResult = caliResult;
-        this.failDesc = failDesc;
         this.realName = realName;
         this.name = name;
         this.suffix = suffix;

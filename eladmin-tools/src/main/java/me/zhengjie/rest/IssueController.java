@@ -22,6 +22,7 @@ import me.zhengjie.annotation.Log;
 import me.zhengjie.domain.Issue;
 import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.service.IssueService;
+import me.zhengjie.service.dto.IssueDto;
 import me.zhengjie.service.dto.IssueQueryCriteria;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -72,7 +73,7 @@ public class IssueController {
     @ApiOperation("新增问题")
     @PostMapping
     @PreAuthorize("@el.check('d:add')")
-    public ResponseEntity<Object> create(@Validated @RequestBody Issue resources){
+    public ResponseEntity<Object> create(@Validated @RequestBody IssueDto resources){
         if (resources.getId() != null) {
             throw new BadRequestException("A new "+ ENTITY_NAME +" cannot already have an ID");
         }
@@ -86,6 +87,15 @@ public class IssueController {
     @PreAuthorize("@el.check('d:edit')")
     public ResponseEntity<Object> update(@Validated(Issue.Update.class) @RequestBody Issue resources){
         issueService.update(resources);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("问题再递交审批")
+    @ApiOperation("问题再递交审批")
+    @GetMapping(value = "/reactiveById")
+    @PreAuthorize("@el.check('d:edit')")
+    public ResponseEntity<Object> reactiveById(@RequestParam("issueId") Long issueId){
+        issueService.reactiveTaskById(issueId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

@@ -1,5 +1,6 @@
 package me.zhengjie.service.impl;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import lombok.RequiredArgsConstructor;
 import me.zhengjie.base.CommonDTO;
 import me.zhengjie.constants.CommonConstants;
@@ -33,6 +34,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @CacheConfig(cacheNames = "issue")
+//@DS("self")
 public class IssueServiceImpl implements IssueService {
 
     private final IssueRepository issueRepository;
@@ -60,14 +62,18 @@ public class IssueServiceImpl implements IssueService {
     @Override
 //    @Cacheable(key = "'id:' + #p0")
     public IssueDto findById(Long id) {
+        IssueDto dto = new IssueDto();
         Issue issue = issueRepository.findById(id).orElseGet(Issue::new);
         ValidationUtil.isNull(issue.getId(), "Issue", "id", id);
-        return issueMapper.toDto(issue);
+        List<IssueFile> issueFiles = issueFileRepository.findComFileByStepNameAndIssueId(id, "D0");
+        dto = issueMapper.toDto(issue);
+        dto.setFileList(issueFiles);
+        return dto;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(Issue resources) {
+    public void create(IssueDto resources) {
         Issue issue = issueRepository.findByIssueTitle(resources.getIssueTitle());
         // 重名校验
         if (issue != null) {
@@ -85,7 +91,15 @@ public class IssueServiceImpl implements IssueService {
             resources.setEncodeNum(df.format(date) + "-000" + num);
         }
         resources.setStatus(CommonConstants.D_STATUS_AUDIT);
-        Issue newIssue = issueRepository.save(resources);
+        Issue newIssue = issueRepository.save(issueMapper.toEntity(resources));
+
+        // 添加文件
+        if (ValidationUtil.isNotEmpty(resources.getFileList())) {
+            resources.getFileList().forEach(file -> {
+                file.setIssueId(newIssue.getId());
+            });
+            issueFileRepository.saveAll(resources.getFileList());
+        }
 
         //创建审批任务给质量部Master
         PreTrail preTrail = new PreTrail();
@@ -126,7 +140,7 @@ public class IssueServiceImpl implements IssueService {
         // 权限校验
         teamMemberService.checkEditAuthorized(issue.getId());
         // 是否执行8D
-        if(resources.getHasReport()!=null) {
+        if (resources.getHasReport() != null) {
             if (resources.getHasReport().equals(CommonConstants.EXECUTE_8D)) {
 
                 // 创建8D则进入待进行状态
@@ -147,6 +161,8 @@ public class IssueServiceImpl implements IssueService {
                     TimeManagement management = new TimeManagement();
                     management.setIssueId(issue.getId());
                     timeMangeRepository.save(management);
+                } else {
+                    resources.setStatus(CommonConstants.D_STATUS_IN_PROCESS);
                 }
 
                 // 2.成立小组--审核人默认为组长,重做
@@ -256,21 +272,25 @@ public class IssueServiceImpl implements IssueService {
                 preTrailRepository.save(preTrail);
             }
         } else {
-            // todo 非审核
-            if(resources.getStatus().equals(CommonConstants.D_STATUS_REJECT)){
+            // 非审核
+            if (resources.getStatus().equals(CommonConstants.D_STATUS_REJECT)) {
                 // 更新审批状态
                 PreTrail preTrail = preTrailRepository.findAllByIssueIdAndType(issue.getId(), CommonConstants.NOT_DEL, CommonConstants.TRAIL_TYPE_8D);
                 if (preTrail != null && !preTrail.getIsDone()) {
-                    if(resources.getReason()!=null){
+                    if (resources.getReason() != null) {
                         preTrail.setApproveResult(false);
                         preTrail.setComment(resources.getReason());
                     } else {
                         preTrail.setApproveResult(true);
+                        preTrail.setComment(null);
                     }
                     preTrail.setIsDone(true);
                     preTrailRepository.save(preTrail);
                 }
             }
+        }
+        if (!resources.getStatus().equals(CommonConstants.D_STATUS_REJECT)) {
+            resources.setReason(null);
         }
         issueRepository.save(resources);
     }
@@ -371,7 +391,6 @@ public class IssueServiceImpl implements IssueService {
 
         }
     }
-
 
     private void initIssueQuestion(Issue issue) {
         List<IssueQuestion> questions = issueQuestionRepository.findByIssueIdAndType(issue.getId(), CommonConstants.QUESTION_5W2H);
@@ -819,6 +838,7 @@ public class IssueServiceImpl implements IssueService {
                     commonDTOList.add(d3);
                     commonDTOList.add(d4);
                     if (ValidationUtil.isBlank(issue.getSpecialEvent())) {
+                        // 若无特殊事件，则继续走D5-D7路线
                         commonDTOList.add(d5);
                         commonDTOList.add(d6);
                         commonDTOList.add(d7);
@@ -832,7 +852,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D1:
                                 if (tm.getD1Status()) {
                                     if (tm.getD1Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d1.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d1.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -844,7 +864,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D2:
                                 if (tm.getD2Status()) {
                                     if (tm.getD2Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d2.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d2.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -855,7 +875,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D3:
                                 if (tm.getD3Status()) {
                                     if (tm.getD3Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d3.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d3.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -866,7 +886,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D4:
                                 if (tm.getD4Status()) {
                                     if (tm.getD4Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d4.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d4.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -877,7 +897,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D5:
                                 if (tm.getD5Status()) {
                                     if (tm.getD5Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d5.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d5.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -888,7 +908,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D6:
                                 if (tm.getD6Status()) {
                                     if (tm.getD6Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d6.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d6.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -899,7 +919,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D7:
                                 if (tm.getD7Status()) {
                                     if (tm.getD7Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d7.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d7.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -910,7 +930,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D8:
                                 if (tm.getD8Status()) {
                                     if (tm.getD8Time().getTime() > tm.getPlanTime1().getTime()) {
-                                        d8.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d8.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime1().getTime()) {
@@ -926,7 +946,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D1:
                                 if (tm.getD1Status()) {
                                     if (tm.getD1Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d1.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d1.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -938,7 +958,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D2:
                                 if (tm.getD2Status()) {
                                     if (tm.getD2Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d2.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d2.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -949,7 +969,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D3:
                                 if (tm.getD3Status()) {
                                     if (tm.getD3Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d3.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d3.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -960,7 +980,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D4:
                                 if (tm.getD4Status()) {
                                     if (tm.getD4Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d4.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d4.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -971,7 +991,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D5:
                                 if (tm.getD5Status()) {
                                     if (tm.getD5Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d5.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d5.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -982,7 +1002,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D6:
                                 if (tm.getD6Status()) {
                                     if (tm.getD6Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d6.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d6.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -993,7 +1013,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D7:
                                 if (tm.getD7Status()) {
                                     if (tm.getD7Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d7.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d7.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -1004,7 +1024,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D8:
                                 if (tm.getD8Status()) {
                                     if (tm.getD8Time().getTime() > tm.getPlanTime2().getTime()) {
-                                        d8.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d8.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime2().getTime()) {
@@ -1020,7 +1040,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D1:
                                 if (tm.getD1Status()) {
                                     if (tm.getD1Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d1.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d1.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1032,7 +1052,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D2:
                                 if (tm.getD2Status()) {
                                     if (tm.getD2Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d2.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d2.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1043,7 +1063,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D3:
                                 if (tm.getD3Status()) {
                                     if (tm.getD3Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d3.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d3.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1054,7 +1074,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D4:
                                 if (tm.getD4Status()) {
                                     if (tm.getD4Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d4.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d4.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1065,7 +1085,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D5:
                                 if (tm.getD5Status()) {
                                     if (tm.getD5Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d5.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d5.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1076,7 +1096,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D6:
                                 if (tm.getD6Status()) {
                                     if (tm.getD6Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d6.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d6.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1087,7 +1107,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D7:
                                 if (tm.getD7Status()) {
                                     if (tm.getD7Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d7.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d7.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1098,7 +1118,7 @@ public class IssueServiceImpl implements IssueService {
                             case CommonConstants.D_STEP_D8:
                                 if (tm.getD8Status()) {
                                     if (tm.getD8Time().getTime() > tm.getPlanTime3().getTime()) {
-                                        d8.setValue(CommonConstants.D_FORMAT_ERROR);
+                                        d8.setOtherValue(CommonConstants.D_FORMAT_WARN);
                                     }
                                 } else {
                                     if (now.getTime() > tm.getPlanTime3().getTime()) {
@@ -1147,5 +1167,23 @@ public class IssueServiceImpl implements IssueService {
     @Override
     public void verification(Set<Long> ids) {
 
+    }
+
+    @Override
+    public void reactiveTaskById(Long issueId) {
+        Issue issue = issueRepository.findById(issueId).orElseGet(Issue::new);
+        ValidationUtil.isNull(issue.getId(), "Issue", "id", issueId);
+        PreTrail preTrail = preTrailRepository.findAllByIssueIdAndType(issueId, CommonConstants.NOT_DEL, CommonConstants.TRAIL_TYPE_8D);
+        if (preTrail != null && preTrail.getIsDone()) {
+            if (preTrail.getApproveResult().equals(false)) {
+                preTrail.setApproveResult(null);
+                preTrail.setComment(null);
+                preTrail.setIsDone(false);
+                issue.setStatus(CommonConstants.D_STATUS_AUDIT);
+                issue.setReason(null);
+                issueRepository.save(issue);
+            }
+            preTrailRepository.save(preTrail);
+        }
     }
 }

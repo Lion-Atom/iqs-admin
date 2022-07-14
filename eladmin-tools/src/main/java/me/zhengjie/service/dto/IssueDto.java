@@ -6,10 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 import me.zhengjie.base.BaseDTO;
 import me.zhengjie.base.CommonDTO;
+import me.zhengjie.domain.IssueFile;
 import me.zhengjie.domain.TimeManagement;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -104,6 +106,8 @@ public class IssueDto extends BaseDTO implements Serializable {
     private String reason;
 
     private TimeManagement timeManagement;
+
+    private List<IssueFile> fileList = new ArrayList<>();
 
     private List<CommonDTO> commonDTOList;
 }

@@ -40,7 +40,7 @@ public interface EquipmentFileRepository extends JpaRepository<EquipmentFile, Lo
      * @param equipIds 设备ids
      */
     @Modifying
-    @Query(value = " delete  from maintain_file where equipment_id in ?1 ", nativeQuery = true)
+    @Query(value = " delete  from equipment_file where equipment_id in ?1 ", nativeQuery = true)
     void deleteByEquipIn(Set<Long> equipIds);
 
 
@@ -57,6 +57,6 @@ public interface EquipmentFileRepository extends JpaRepository<EquipmentFile, Lo
      * @param equipId 设备id
      * @return 设备信息列表
      */
-    @Query(value = " select * from maintain_file where equipment_id = ?1 ", nativeQuery = true)
+    @Query(value = " select * from equipment_file where equipment_id = ?1 ", nativeQuery = true)
     List<EquipmentFile> findByCaliId(Long equipId);
 }

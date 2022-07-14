@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.zhengjie.constants.CommonConstants;
 import me.zhengjie.domain.Equipment;
 import me.zhengjie.domain.FileDept;
+import me.zhengjie.repository.EquipmentFileRepository;
 import me.zhengjie.repository.EquipmentRepository;
 import me.zhengjie.repository.FileDeptRepository;
 import me.zhengjie.service.EquipmentService;
@@ -31,6 +32,7 @@ public class EquipmentServiceImpl implements EquipmentService {
     private final EquipmentMapper equipmentMapper;
     private final FileDeptRepository deptRepository;
     private final EquipmentRepository equipmentRepository;
+    private final EquipmentFileRepository fileRepository;
 
     @Override
     public List<EquipmentDto> queryAll(EquipmentQueryCriteria criteria) {
@@ -189,6 +191,7 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
         equipmentRepository.deleteAllByIdIn(ids);
+        fileRepository.deleteByEquipIn(ids);
     }
 
     @Override

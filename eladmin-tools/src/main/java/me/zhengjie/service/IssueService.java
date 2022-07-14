@@ -29,7 +29,7 @@ public interface IssueService {
      * 创建
      * @param resources /
      */
-    void create(Issue resources);
+    void create(IssueDto resources);
 
     /**
      * 编辑
@@ -71,4 +71,9 @@ public interface IssueService {
      * @param ids /
      */
     void verification(Set<Long> ids);
+
+    /**
+     * @param issueId 问题ID
+     */
+    void reactiveTaskById(Long issueId);
 }

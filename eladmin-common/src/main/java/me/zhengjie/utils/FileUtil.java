@@ -213,6 +213,10 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
 
         String name = getFileNameNoEx(file.getOriginalFilename());
         String suffix = getExtensionName(file.getOriginalFilename());
+        if (ValidationUtil.isBlank(encodeNum)) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            encodeNum = df.format(new Date());
+        }
         String appendStr = "-" + encodeNum + "-" + stepName;
         try {
             String fileName = name + appendStr + "." + suffix;

@@ -15,10 +15,7 @@ import me.zhengjie.service.TeamMemberService;
 import me.zhengjie.service.dto.IssueBindFileDto;
 import me.zhengjie.service.dto.IssueBindFileQueryDto;
 import me.zhengjie.service.dto.IssueFileQueryDto;
-import me.zhengjie.utils.FileUtil;
-import me.zhengjie.utils.QueryHelp;
-import me.zhengjie.utils.StringUtils;
-import me.zhengjie.utils.ValidationUtil;
+import me.zhengjie.utils.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -51,20 +49,24 @@ public class IssueFileServiceImpl implements IssueFileService {
 
     @Override
     public List<IssueFile> findByCondV2(IssueBindFileQueryDto criteria) {
-        return issueFileRepository.findComFileByStepNameAndIssueId(criteria.getIssueId(),criteria.getStepName());
+        return issueFileRepository.findComFileByStepNameAndIssueId(criteria.getIssueId(), criteria.getStepName());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public IssueFile create(Long issueId, String stepName, MultipartFile multipartFile) {
+        Issue issue = new Issue();
         // 权限校验
-        teamMemberService.checkEditAuthorized(issueId);
-        // 查询问题判null
-        Issue issue = issueRepository.findById(issueId).orElseGet(Issue::new);
-        ValidationUtil.isNull(issue.getId(), "Issue", "id", issueId);
+        if (!stepName.equals("D0")) {
+            // D0时刻是创建待审批文件
+            teamMemberService.checkEditAuthorized(issueId);
+            // 查询问题判null
+            issue = issueRepository.findById(issueId).orElseGet(Issue::new);
+            ValidationUtil.isNull(issue.getId(), "Issue", "id", issueId);
+        }
         FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
-        String type = FileUtil.getFileType(suffix);
+        String type = FileUtil.getFileType(Objects.requireNonNull(suffix));
         File file = FileUtil.uploadFile(multipartFile, issue.getEncodeNum(), stepName, properties.getPath().getPath() + type + File.separator);
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
@@ -169,7 +171,7 @@ public class IssueFileServiceImpl implements IssueFileService {
 
     @Override
     public List<IssueFile> getBindFilesByExample(IssueBindFileQueryDto queryDto) {
-        return issueFileRepository.findTempFileByStepNameAndIssueId(queryDto.getIssueId(),queryDto.getStepName());
+        return issueFileRepository.findTempFileByStepNameAndIssueId(queryDto.getIssueId(), queryDto.getStepName());
     }
 
     @Override

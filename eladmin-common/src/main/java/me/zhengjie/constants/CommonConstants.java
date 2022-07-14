@@ -328,9 +328,9 @@ public class CommonConstants {
     public static final String D_FORMAT_SUCCESS = "success";
 
     /**
-     * 步骤格式化-进行中
+     * 步骤格式化-进行中,实际：已做，但超时
      */
-    public static final String D_FORMAT_PROCESS = "process";
+    public static final String D_FORMAT_WARN = "process";
 
     /**
      * 步骤格式化-进行中
@@ -338,7 +338,7 @@ public class CommonConstants {
     public static final String D_FORMAT_WAIT = "wait";
 
     /**
-     * 步骤格式化-超时
+     * 步骤格式化-超时，实际：未做，已超时
      */
     public static final String D_FORMAT_ERROR = "error";
 
