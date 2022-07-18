@@ -34,6 +34,7 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
     private final TrCertificationFileRepository fileRepository;
     private final FileDeptRepository deptRepository;
     private final TrainCertificationMapper certificationMapper;
+    private final TrainTipRepository tipRepository;
 
     @Override
     public List<TrainCertificationDto> queryAll(TrainCertificationQueryCriteria criteria) {
@@ -141,7 +142,7 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         if (resource.getJobType() != null && CommonConstants.STAFF_CER_TYPE_LIST.contains(resource.getCertificationType())) {
             trainCertification = certificationRepository.findAllByCertTypeAndJobTypeAndUserId(resource.getCertificationType(), resource.getJobType(), resource.getUserId());
         } else if (resource.getTrScheduleId() != null && resource.getCertificationType().equals(CommonConstants.STAFF_CER_TYPE_JOB)) {
-                trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndUserId(resource.getCertificationType(), resource.getTrScheduleId(), resource.getUserId());
+            trainCertification = certificationRepository.findAllByCertTypeAndTrScheduleIdAndUserId(resource.getCertificationType(), resource.getTrScheduleId(), resource.getUserId());
         }
         if (trainCertification != null && !trainCertification.getId().equals(resource.getId())) {
             throw new EntityExistException(TrainCertification.class, "staffName", resource.getStaffName());
@@ -214,5 +215,7 @@ public class TrainCertificationServiceImpl implements TrainCertificationService 
         certificationRepository.deleteAllByIdIn(ids);
         // 删除相关附件
         fileRepository.deleteByTrNewStaffIdIn(ids);
+        // 删除提醒信息
+        tipRepository.deleteAllByBindingIdInAndTrainType(ids, CommonConstants.TRAIN_TIP_TYPE_CERTIFICATION);
     }
 }

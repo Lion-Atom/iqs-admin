@@ -5,7 +5,7 @@ spring:
   freemarker:
     check-template-location: false
   profiles:
-    active: dev
+    active: master
   jackson:
     time-zone: GMT+8
   data:

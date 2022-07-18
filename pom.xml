@@ -51,6 +51,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!--多数据源切换-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+            <version>3.5.0</version>
+        </dependency>
+
         <!--Spring boot 测试-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

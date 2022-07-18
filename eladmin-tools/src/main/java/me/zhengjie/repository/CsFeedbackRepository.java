@@ -16,21 +16,21 @@
 package me.zhengjie.repository;
 
 import me.zhengjie.domain.CalibrationOrg;
-import me.zhengjie.domain.TrainTip;
+import me.zhengjie.domain.CsFeedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Tong Minjie
- * @date 2022-03-11
+ * @date 2022-07-15
  */
 @Repository
-public interface TrainTipRepository extends JpaRepository<TrainTip, Long>, JpaSpecificationExecutor<TrainTip> {
+public interface CsFeedbackRepository extends JpaRepository<CsFeedback, Long>, JpaSpecificationExecutor<CsFeedback> {
 
     /**
      * 根据Id删除
@@ -39,11 +39,4 @@ public interface TrainTipRepository extends JpaRepository<TrainTip, Long>, JpaSp
      */
     void deleteAllByIdIn(Set<Long> ids);
 
-    /**
-     * @param bindingIds 绑定IDS
-     * @param trainType 培训类型
-     */
-    @Modifying
-    @Query(value = "delete from train_tip where binding_id in ?1 and train_type = ?2", nativeQuery = true)
-    void deleteAllByBindingIdInAndTrainType(Set<Long> bindingIds, String trainType);
 }

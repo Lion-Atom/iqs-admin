@@ -15,22 +15,35 @@
  */
 package me.zhengjie.repository;
 
-import me.zhengjie.domain.CalibrationOrg;
-import me.zhengjie.domain.TrainTip;
+import me.zhengjie.domain.CaliOrgFile;
+import me.zhengjie.domain.CsFeedbackFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
+
 
 /**
  * @author Tong Minjie
- * @date 2022-03-11
+ * @date 2022-07-15
  */
 @Repository
-public interface TrainTipRepository extends JpaRepository<TrainTip, Long>, JpaSpecificationExecutor<TrainTip> {
+public interface CsFeedbackFileRepository extends JpaRepository<CsFeedbackFile, Long>, JpaSpecificationExecutor<CsFeedbackFile> {
+
+
+    /**
+     * 根据客户反馈id删除附件信息
+     *
+     * @param csFeedbackIds 客户反馈IDS
+     */
+    @Modifying
+    @Query(value = " delete  from cs_feedback_file where cs_feedback_id in ?1 ", nativeQuery = true)
+    void deleteByCsFeedbackIdIn(Set<Long> csFeedbackIds);
+
 
     /**
      * 根据Id删除
@@ -40,10 +53,12 @@ public interface TrainTipRepository extends JpaRepository<TrainTip, Long>, JpaSp
     void deleteAllByIdIn(Set<Long> ids);
 
     /**
-     * @param bindingIds 绑定IDS
-     * @param trainType 培训类型
+     * 根据客户反馈id查询相关附件
+     *
+     * @param csFeedbackId 客户反馈id
+     * @return 客户反馈附件信息列表
      */
-    @Modifying
-    @Query(value = "delete from train_tip where binding_id in ?1 and train_type = ?2", nativeQuery = true)
-    void deleteAllByBindingIdInAndTrainType(Set<Long> bindingIds, String trainType);
+    @Query(value = " select * from cs_feedback_file where cs_feedback_id = ?1 ", nativeQuery = true)
+    List<CsFeedbackFile> findByCsFeedbackId(Long csFeedbackId);
+
 }

@@ -46,6 +46,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
     private final ToolsUserRepository toolsUserRepository;
     private final ToolsUserMapper toolsUserMapper;
     private final TrainCertificationRepository certificationRepository;
+    private final TrainTipRepository tipRepository;
 
     @Override
     public List<TrainScheduleDto> queryAll(TrainScheduleQueryCriteria criteria) {
@@ -346,5 +347,7 @@ public class TrainScheduleServiceImpl implements TrainScheduleService {
         examStaffRepository.deleteAllByTrScheduleIdIn(ids);
         // 删除用户认证信息
         certificationRepository.deleteAllByTrScheduleIdIn(ids);
+        // 删除提醒信息
+        tipRepository.deleteAllByBindingIdInAndTrainType(ids,CommonConstants.TRAIN_TIP_TYPE_SCHEDULE);
     }
 }

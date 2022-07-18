@@ -22,6 +22,9 @@ spring:
       url: jdbc:log4jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:iqs}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
       username: ${DB_USER:root}
       password: ${DB_PWD:Atom931206}
+#      url: jdbc:log4jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:iqs}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
+#      username: ${DB_USER:root}
+#      password: ${DB_PWD:12345678}
 #      url: jdbc:log4jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:iqs_bakj}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
 #      username: ${DB_USER:root}
 #      password: ${DB_PWD:Atom931206}

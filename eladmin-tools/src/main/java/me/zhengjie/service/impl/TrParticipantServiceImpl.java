@@ -240,7 +240,7 @@ public class TrParticipantServiceImpl implements TrParticipantService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
-        // todo 关联查询操作，判断是否影响参与者数据
+        // todo 关联查询操作，判断是否影响参与者数据,暂无删除操作，若启用删除操作，则需要后续添加对培训记录、员工考试信息的删除
         trParticipantRepository.deleteAllByIdIn(ids);
     }
 
@@ -311,8 +311,12 @@ public class TrParticipantServiceImpl implements TrParticipantService {
             // 删除旧数据
             Set<Long> scheduleIds = new HashSet<>();
             scheduleIds.add(scheduleId);
+            // 删除报名信息
             trParticipantRepository.deleteAllByTrScheduleIdIn(scheduleIds);
+            // 删除培训记录
             staffRepository.deleteAllByTrScheduleIdIn(scheduleIds);
+            // 删除培训考试信息
+            examStaffRepository.deleteAllByTrScheduleIdIn(scheduleIds);
 
             TrainSchedule schedule = trScheduleRepository.findById(scheduleId).orElseGet(TrainSchedule::new);
             ValidationUtil.isNull(schedule.getId(), "TrainSchedule", "id", scheduleId);
