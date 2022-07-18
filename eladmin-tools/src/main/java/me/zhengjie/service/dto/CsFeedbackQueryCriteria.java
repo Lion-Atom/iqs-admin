@@ -36,6 +36,9 @@ public class CsFeedbackQueryCriteria {
     private String blurry;
 
     @Query
+    private String companyName;
+
+    @Query
     private String type;
 
     @Query
