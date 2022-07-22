@@ -40,7 +40,7 @@ public class EquipmentFileServiceImpl implements EquipmentFileService {
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
         assert suffix != null;
         String type = FileUtil.getFileType(suffix);
-
+        String fileNameFormat = FileUtil.fileNameFormat(multipartFile, fileType, suffix);
         File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
@@ -50,7 +50,7 @@ public class EquipmentFileServiceImpl implements EquipmentFileService {
             EquipmentFile equipmentFile = new EquipmentFile(
                     equipId,
                     fileType,
-                    multipartFile.getOriginalFilename(),
+                    fileNameFormat,
                     file.getName(),
                     suffix,
                     file.getPath(),

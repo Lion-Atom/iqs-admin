@@ -386,4 +386,12 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     public static String getMd5(File file) {
         return getMd5(getByte(file));
     }
+
+    public static String fileNameFormat(MultipartFile multipartFile,String fileType,String suffix){
+        //文件名称
+        String fileName_firstName = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("\\")+1).substring(0,multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("\\")+1).lastIndexOf("."));
+        //创建文件时的时间
+        String fileName_date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        return fileName_firstName+"-"+fileName_date+"-"+fileType+"."+suffix;
+    }
 }

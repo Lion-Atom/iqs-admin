@@ -34,7 +34,7 @@ public class InstruCaliFileServiceV2Impl implements InstruCaliFileServiceV2 {
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
         assert suffix != null;
         String type = FileUtil.getFileType(suffix);
-
+        String fileNameFormat = FileUtil.fileNameFormat(multipartFile, "校准报告", suffix);
         File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
@@ -43,7 +43,7 @@ public class InstruCaliFileServiceV2Impl implements InstruCaliFileServiceV2 {
 
             InstruCaliFileV2 maintainFile = new InstruCaliFileV2(
                     caliId,
-                    multipartFile.getOriginalFilename(),
+                    fileNameFormat,
                     file.getName(),
                     suffix,
                     file.getPath(),

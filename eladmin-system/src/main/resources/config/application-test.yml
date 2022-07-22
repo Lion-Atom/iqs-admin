@@ -7,9 +7,9 @@ spring:
         druid:
           db-type: com.alibaba.druid.pool.DruidDataSource
           driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-          url: jdbc:log4jdbc:mysql://${DB_HOST:192.168.3.29}:${DB_PORT:3306}/${DB_NAME:iqs}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
-          username: ${DB_USER:iqs}
-          password: ${DB_PWD:1234iqs5678}
+          url: jdbc:log4jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:iqs}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
+          username: ${DB_USER:root}
+          password: ${DB_PWD:510562}
           # 初始连接数
           initial-size: 5
           # 最小连接数

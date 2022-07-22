@@ -33,6 +33,7 @@ public class MaintainFileServiceImpl implements MaintainFileService {
         String type = FileUtil.getFileType(suffix);
 
         File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
+        String fileNameFormat = FileUtil.fileNameFormat(multipartFile, "保养记录", suffix);
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
         }
@@ -40,7 +41,7 @@ public class MaintainFileServiceImpl implements MaintainFileService {
 
             MaintainFile maintainFile = new MaintainFile(
                     maintainId,
-                    multipartFile.getOriginalFilename(),
+                    fileNameFormat,
                     file.getName(),
                     suffix,
                     file.getPath(),

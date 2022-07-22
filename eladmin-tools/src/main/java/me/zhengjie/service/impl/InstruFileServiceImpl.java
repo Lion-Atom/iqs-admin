@@ -84,6 +84,8 @@ public class InstruFileServiceImpl implements InstruFileService {
         String type = FileUtil.getFileType(suffix);
 
         File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
+        String fileNameFormat = FileUtil.fileNameFormat(multipartFile, "异常报告", suffix);
+
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
         }
@@ -91,7 +93,7 @@ public class InstruFileServiceImpl implements InstruFileService {
             String name = FileUtil.getFileNameNoEx(multipartFile.getOriginalFilename()) + "异常报告";
             InstrumentFile instrumentFile = new InstrumentFile(
                     instruId,
-                    file.getName(),
+                    fileNameFormat,
                     name,
                     suffix,
                     file.getPath(),

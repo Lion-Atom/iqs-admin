@@ -51,6 +51,7 @@ public class CaliOrgFileServiceImpl implements CaliOrgFileService {
         String type = FileUtil.getFileType(suffix);
 
         File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
+        String fileNameFormat = FileUtil.fileNameFormat(multipartFile, "资格证明", suffix);
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
         }
@@ -59,7 +60,7 @@ public class CaliOrgFileServiceImpl implements CaliOrgFileService {
             CaliOrgFile caliOrgFile = new CaliOrgFile(
                     caliOrgId,
                     "仪校机构",
-                    multipartFile.getOriginalFilename(),
+                    fileNameFormat,
                     file.getName(),
                     suffix,
                     file.getPath(),

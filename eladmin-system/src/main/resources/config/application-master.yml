@@ -58,7 +58,7 @@ spring:
         self:
           db-type: com.alibaba.druid.pool.DruidDataSource
           driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-          url: jdbc:log4jdbc:mysql://${DB_HOST:124.70.144.76}:${DB_PORT:3306}/${DB_NAME:iqs}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
+          url: jdbc:log4jdbc:mysql://${DB_HOST:192.168.3.29}:${DB_PORT:3306}/${DB_NAME:iqs}?serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8&useSSL=false
           username: ${DB_USER:iqs}
           password: ${DB_PWD:1234iqs5678}
   resources:

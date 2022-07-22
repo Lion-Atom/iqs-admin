@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +36,7 @@ public class RepairFileServiceImpl implements RepairFileService {
         String type = FileUtil.getFileType(suffix);
 
         File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
+        String fileNameFormat = FileUtil.fileNameFormat(multipartFile, "维修确认单", suffix);
         if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
         }
@@ -41,7 +44,7 @@ public class RepairFileServiceImpl implements RepairFileService {
 
             RepairFile repairFile = new RepairFile(
                     repairId,
-                    multipartFile.getOriginalFilename(),
+                    fileNameFormat,
                     file.getName(),
                     suffix,
                     file.getPath(),
